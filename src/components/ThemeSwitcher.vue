@@ -220,12 +220,46 @@ const resetToDefault = () => {
 };
 
 const updateRootCSSVariables = (color, sat) => {
-  // Cette fonction simule la mise à jour des variables CSS à la racine du document
-  // Dans une application réelle, cela modifierait effectivement les variables CSS
-  console.log(`Mise à jour du thème: couleur=${color}, saturation=${sat}%`);
+  // Convertir la couleur hexadécimale en valeurs RGB
+  const hex = color.replace('#', '');
+  let r = parseInt(hex.substring(0, 2), 16);
+  let g = parseInt(hex.substring(2, 4), 16);
+  let b = parseInt(hex.substring(4, 6), 16);
   
-  // Exemple de comment on pourrait modifier les variables CSS:
-  // document.documentElement.style.setProperty('--primary-500', color);
+  // Ajuster la saturation
+  const factor = sat / 100;
+  
+  // Mettre à jour les variables CSS pour la couleur primaire
+  document.documentElement.style.setProperty('--primary-50', adjustColor(r, g, b, 0.95, factor));
+  document.documentElement.style.setProperty('--primary-100', adjustColor(r, g, b, 0.9, factor));
+  document.documentElement.style.setProperty('--primary-200', adjustColor(r, g, b, 0.8, factor));
+  document.documentElement.style.setProperty('--primary-300', adjustColor(r, g, b, 0.7, factor));
+  document.documentElement.style.setProperty('--primary-400', adjustColor(r, g, b, 0.6, factor));
+  document.documentElement.style.setProperty('--primary-500', color);
+  document.documentElement.style.setProperty('--primary-600', adjustColor(r, g, b, 0.4, factor));
+  document.documentElement.style.setProperty('--primary-700', adjustColor(r, g, b, 0.3, factor));
+  document.documentElement.style.setProperty('--primary-800', adjustColor(r, g, b, 0.2, factor));
+  document.documentElement.style.setProperty('--primary-900', adjustColor(r, g, b, 0.1, factor));
+  
+  // Créer un événement de modification du thème
+  const event = new CustomEvent('theme-updated', { 
+    detail: { 
+      primary: color,
+      saturation: sat
+    } 
+  });
+  window.dispatchEvent(event);
+};
+
+// Fonction pour ajuster la couleur (clair/foncé)
+const adjustColor = (r, g, b, lightnessFactor, satFactor) => {
+  // Ajuster la luminosité
+  r = Math.min(255, Math.round(r + (255 - r) * lightnessFactor));
+  g = Math.min(255, Math.round(g + (255 - g) * lightnessFactor));
+  b = Math.min(255, Math.round(b + (255 - b) * lightnessFactor));
+  
+  // Convertir en hexa
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 };
 
 const saveThemePreferences = () => {

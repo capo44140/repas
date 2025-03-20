@@ -1,5 +1,5 @@
 <template>
-  <div 
+  <div class="flex h-screen"
     :class="{
       'bg-gray-50 text-gray-900': !isDarkMode,
       'bg-gray-900 text-gray-100': isDarkMode
@@ -7,13 +7,13 @@
   >
     <NetworkStatus position="top-0 left-0 right-0" />
     
-    <div v-if="isLoginVisible">
+    <div v-if="isLoginVisible" class="w-full">
       <!-- ... existing code for login ... -->
     </div>
-    <div v-else class="flex">
+    <div v-else class="flex w-full h-screen overflow-hidden">
       <!-- Sidebar -->
       <aside 
-        class="h-screen flex flex-col border-r transition-all duration-300 ease-in-out sticky top-0"
+        class="flex flex-col border-r transition-all duration-300 ease-in-out h-screen overflow-hidden"
         :class="{
           'w-64': isSidebarOpen,
           'w-16': !isSidebarOpen,
@@ -25,15 +25,15 @@
         <div class="p-4 flex items-center h-16">
           <img src="/vite.svg" alt="Logo" class="h-8 w-8 flex-shrink-0" />
           <h1 
-            class="ml-3 font-semibold text-lg transition-opacity duration-200"
-            :class="{ 'opacity-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
+            class="ml-3 font-semibold text-lg transition-opacity duration-300"
+            :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
           >
             RepasFork
           </h1>
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 pt-4">
+        <nav class="flex-1 pt-4 overflow-y-auto">
           <router-link 
             to="/" 
             class="flex items-center px-4 py-3 mb-1 transition-colors duration-200"
@@ -46,7 +46,7 @@
           >
             <Icon icon="ph:house" class="w-6 h-6 flex-shrink-0" />
             <span 
-              class="ml-3 transition-opacity duration-200"
+              class="ml-3 transition-opacity duration-300 whitespace-nowrap overflow-hidden"
               :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
             >
               Accueil
@@ -65,29 +65,10 @@
           >
             <Icon icon="ph:fork-knife" class="w-6 h-6 flex-shrink-0" />
             <span 
-              class="ml-3 transition-opacity duration-200"
+              class="ml-3 transition-opacity duration-300 whitespace-nowrap overflow-hidden"
               :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
             >
               Repas générés
-            </span>
-          </router-link>
-
-          <router-link 
-            to="/meal-suggestions" 
-            class="flex items-center px-4 py-3 mb-1 transition-colors duration-200"
-            :class="{
-              'text-gray-600 hover:bg-gray-100 hover:text-gray-900': !isDarkMode,
-              'text-gray-400 hover:bg-gray-700 hover:text-gray-200': isDarkMode,
-              'justify-center': !isSidebarOpen,
-              'justify-start': isSidebarOpen
-            }"
-          >
-            <Icon icon="ph:bookmark" class="w-6 h-6 flex-shrink-0" />
-            <span 
-              class="ml-3 transition-opacity duration-200"
-              :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
-            >
-              Suggestions
             </span>
           </router-link>
 
@@ -103,7 +84,7 @@
           >
             <Icon icon="ph:chart-line" class="w-6 h-6 flex-shrink-0" />
             <span 
-              class="ml-3 transition-opacity duration-200"
+              class="ml-3 transition-opacity duration-300 whitespace-nowrap overflow-hidden"
               :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
             >
               Statistiques
@@ -122,7 +103,7 @@
           >
             <Icon icon="ph:gear" class="w-6 h-6 flex-shrink-0" />
             <span 
-              class="ml-3 transition-opacity duration-200"
+              class="ml-3 transition-opacity duration-300 whitespace-nowrap overflow-hidden"
               :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
             >
               Administration
@@ -132,18 +113,20 @@
           <!-- Lien vers les préférences utilisateur -->
           <router-link 
             to="/preferences" 
-            class="group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200"
-            :class="[$route.path === '/preferences' ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white']"
+            class="flex items-center px-4 py-3 mb-1 transition-colors duration-200"
+            :class="{
+              'text-gray-600 hover:bg-gray-100 hover:text-gray-900': !isDarkMode,
+              'text-gray-400 hover:bg-gray-700 hover:text-gray-200': isDarkMode,
+              'justify-center': !isSidebarOpen,
+              'justify-start': isSidebarOpen
+            }"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0 mr-3 h-6 w-6 text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
+            <Icon icon="ph:gear" class="w-6 h-6 flex-shrink-0" />
             <span 
-              class="truncate transition-opacity duration-200" 
-              :class="{ 'opacity-0 lg:opacity-100 group-hover:opacity-100': !isSidebarOpen }"
+              class="ml-3 transition-opacity duration-300 whitespace-nowrap overflow-hidden"
+              :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
             >
-              Préférences
+            Préférences
             </span>
           </router-link>
         </nav>
@@ -170,7 +153,7 @@
               class="w-6 h-6 flex-shrink-0" 
             />
             <span 
-              class="ml-3 transition-opacity duration-200"
+              class="ml-3 transition-opacity duration-300 whitespace-nowrap overflow-hidden"
               :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
             >
               {{ isDarkMode ? 'Mode clair' : 'Mode sombre' }}
@@ -189,7 +172,7 @@
           >
             <Icon icon="ph:sign-out" class="w-6 h-6 flex-shrink-0" />
             <span 
-              class="ml-3 transition-opacity duration-200"
+              class="ml-3 transition-opacity duration-300 whitespace-nowrap overflow-hidden"
               :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
             >
               Déconnexion
@@ -199,10 +182,10 @@
       </aside>
 
       <!-- Content Wrapper -->
-      <div class="flex-1">
+      <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <!-- Header -->
         <header 
-          class="h-16 border-b flex items-center justify-between px-6 shadow-sm sticky top-0 z-10"
+          class="h-16 border-b flex items-center justify-between px-6 shadow-sm"
           :class="{
             'bg-white border-gray-200': !isDarkMode,
             'bg-gray-800 border-gray-700': isDarkMode
@@ -211,11 +194,12 @@
           <div class="flex items-center">
             <button 
               @click="toggleSidebar"
-              class="rounded-md p-2 -ml-2 transition-colors duration-200"
+              class="rounded-md p-2 -ml-2 transition-colors duration-200 flex items-center justify-center"
               :class="{
                 'hover:bg-gray-100 text-gray-600': !isDarkMode,
                 'hover:bg-gray-700 text-gray-400': isDarkMode
               }"
+              aria-label="Toggle sidebar"
             >
               <Icon 
                 :icon="isSidebarOpen ? 'ph:caret-left' : 'ph:caret-right'" 
@@ -238,7 +222,7 @@
         </header>
 
         <!-- Main Content -->
-        <main class="p-6">
+        <main class="flex-1 overflow-auto p-6">
           <router-view v-slot="{ Component }">
             <transition name="fade" mode="out-in">
               <component :is="Component" />
@@ -311,9 +295,29 @@ const updateMobileState = () => {
   isMobile.value = !isDesktop();
 };
 
+// Chargement initial de l'état de la sidebar depuis localStorage
+// S'il n'y a pas de valeur enregistrée, la sidebar est ouverte par défaut sur desktop et fermée sur mobile
+const initSidebarState = () => {
+  const savedState = localStorage.getItem('sidebarOpen');
+  if (savedState === null) {
+    // Valeur par défaut basée sur la taille de l'écran
+    isSidebarOpen.value = window.innerWidth >= 768;
+  } else {
+    isSidebarOpen.value = savedState === 'true';
+  }
+};
+
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
-  localStorage.setItem('sidebarOpen', isSidebarOpen.value);
+  localStorage.setItem('sidebarOpen', isSidebarOpen.value.toString());
+  
+  // Si on est sur mobile et que la sidebar est ouverte, ajouter une classe pour
+  // empêcher le défilement du contenu en arrière-plan
+  if (isMobile.value && isSidebarOpen.value) {
+    document.body.classList.add('overflow-hidden');
+  } else {
+    document.body.classList.remove('overflow-hidden');
+  }
 };
 
 // Fournir la fonction toggleSidebar aux composants enfants
@@ -329,20 +333,17 @@ onMounted(() => {
   // Initialiser la largeur de la fenêtre
   updateMobileState();
   
-  // Initialisation de l'état de la sidebar en fonction de la taille de l'écran
-  isSidebarOpen.value = isDesktop();
+  // Initialisation de l'état de la sidebar
+  initSidebarState();
   
   // Gestion du redimensionnement
   window.addEventListener('resize', () => {
     updateMobileState();
-    if (isDesktop()) {
-      // Sur desktop, on garde la sidebar ouverte par défaut
-      if (!isSidebarOpen.value) {
-        isSidebarOpen.value = true;
-      }
-    } else {
-      // Sur mobile, on ferme la sidebar
+    
+    // Sur mobile, fermer automatiquement la sidebar si elle est ouverte
+    if (isMobile.value && isSidebarOpen.value) {
       isSidebarOpen.value = false;
+      localStorage.setItem('sidebarOpen', 'false');
     }
   });
 });
@@ -518,5 +519,34 @@ onBeforeUnmount(() => {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Transitions pour le sidebar */
+.sidebar-enter-active,
+.sidebar-leave-active {
+  transition: width 0.3s ease;
+}
+
+.sidebar-enter-from,
+.sidebar-leave-to {
+  width: 4rem; /* 16px */
+}
+
+.sidebar-enter-to,
+.sidebar-leave-from {
+  width: 16rem; /* 64px */
+}
+
+/* Transitions pour le texte du sidebar */
+.text-enter-active,
+.text-leave-active {
+  transition: opacity 0.2s ease, width 0.2s ease;
+  transition-delay: 0.1s;
+}
+
+.text-enter-from,
+.text-leave-to {
+  opacity: 0;
+  width: 0;
 }
 </style>
