@@ -2,8 +2,15 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import './style.css';
+import { Icon } from '@iconify/vue'
+import ToastNotification from './components/ToastNotification.vue'
 
 const app = createApp(App)
+
+// Enregistrement des composants globaux
+app.component('Icon', Icon)
+app.component('ToastNotification', ToastNotification)
+
 app.use(router)
 app.mount('#app')
 

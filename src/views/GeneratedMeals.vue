@@ -366,10 +366,20 @@ const parseCSV = (content) => {
 
 // Fonctions utilitaires
 const showNotification = (type, message) => {
-  notification.value = { show: true, type, message };
-  setTimeout(() => {
-    notification.value.show = false;
-  }, 3000);
+  const showToast = inject('showToast');
+  if (showToast) {
+    showToast({
+      type,
+      message,
+      title: type === 'success' ? 'Succès' : type === 'error' ? 'Erreur' : 'Information'
+    });
+  } else {
+    // Fallback au cas où le provider n'existe pas
+    notification.value = { show: true, type, message };
+    setTimeout(() => {
+      notification.value.show = false;
+    }, 3000);
+  }
 };
 
 // Charger les repas au montage du composant

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, inject } from 'vue';
 import { Icon } from '@iconify/vue';
 
 // État pour le fichier CSV et les données
@@ -266,13 +266,23 @@ const saveToDefaultFile = () => {
 
 // Afficher une notification
 const showNotification = (message, type = 'success') => {
-  notification.show = true;
-  notification.message = message;
-  notification.type = type;
-  
-  setTimeout(() => {
-    notification.show = false;
-  }, 3000);
+  const showToast = inject('showToast');
+  if (showToast) {
+    showToast({
+      type,
+      message,
+      title: type === 'success' ? 'Succès' : type === 'error' ? 'Erreur' : 'Information'
+    });
+  } else {
+    // Fallback au cas où le provider n'existe pas
+    notification.show = true;
+    notification.message = message;
+    notification.type = type;
+    
+    setTimeout(() => {
+      notification.show = false;
+    }, 3000);
+  }
 };
 
 // Vérifier si le fichier est valide

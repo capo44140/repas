@@ -19,7 +19,8 @@
           <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
             RepasFork est un générateur intelligent de menus qui vous aide à planifier vos repas de la semaine.
             L'application prend en compte la saison pour vous suggérer des repas adaptés, vous permettant ainsi
-            de manger des produits de saison tout en variant vos menus.
+            de manger des produits de saison tout en variant vos menus. Toutes vos données sont stockées localement
+            dans votre navigateur pour une confidentialité totale.
           </p>
         </div>
 
@@ -31,7 +32,7 @@
           <div class="grid md:grid-cols-2 gap-6">
             <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
               <div class="flex items-center mb-4">
-                <Icon icon="ph:calendar-check" class="w-6 h-6 text-primary-600 dark:text-primary-400 mr-3" />
+                <Icon icon="ph:calendar-check" class="w-6 h-6 text-primary-500 dark:text-primary-400 mr-3" />
                 <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200">
                   Planification hebdomadaire
                 </h3>
@@ -42,7 +43,7 @@
             </div>
             <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
               <div class="flex items-center mb-4">
-                <Icon icon="ph:leaf" class="w-6 h-6 text-primary-600 dark:text-primary-400 mr-3" />
+                <Icon icon="ph:leaf" class="w-6 h-6 text-primary-500 dark:text-primary-400 mr-3" />
                 <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200">
                   Produits de saison
                 </h3>
@@ -53,7 +54,7 @@
             </div>
             <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
               <div class="flex items-center mb-4">
-                <Icon icon="ph:fork-knife" class="w-6 h-6 text-primary-600 dark:text-primary-400 mr-3" />
+                <Icon icon="ph:fork-knife" class="w-6 h-6 text-primary-500 dark:text-primary-400 mr-3" />
                 <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200">
                   Repas variés
                 </h3>
@@ -64,7 +65,7 @@
             </div>
             <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
               <div class="flex items-center mb-4">
-                <Icon icon="ph:file-csv" class="w-6 h-6 text-primary-600 dark:text-primary-400 mr-3" />
+                <Icon icon="ph:file-csv" class="w-6 h-6 text-primary-500 dark:text-primary-400 mr-3" />
                 <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200">
                   Import personnalisé
                 </h3>
@@ -83,12 +84,32 @@
           </h2>
           <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
             <ol class="list-decimal list-inside space-y-3 text-gray-600 dark:text-gray-300">
-              <li>Accédez à la section <router-link to="/generated-meals" class="text-primary-600 dark:text-primary-400 hover:underline">"Repas générés"</router-link> depuis le menu latéral</li>
+              <li>Accédez à la section <router-link to="/generated-meals" class="text-primary-500 dark:text-primary-400 hover:underline">"Repas générés"</router-link> depuis le menu latéral</li>
               <li>Sélectionnez le nombre de semaines pour votre planning</li>
               <li>Choisissez la saison actuelle pour des suggestions adaptées</li>
               <li>Sélectionnez les types de repas à inclure (midi et/ou soir)</li>
               <li>Cliquez sur "Générer les repas" pour obtenir votre planning</li>
             </ol>
+          </div>
+        </div>
+        
+        <!-- Installation comme PWA -->
+        <div>
+          <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+            Installer l'application
+          </h2>
+          <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+              RepasFork est une application web progressive (PWA) que vous pouvez installer sur votre appareil :
+            </p>
+            <ol class="list-decimal list-inside space-y-3 text-gray-600 dark:text-gray-300">
+              <li>Sur Chrome ou Edge : cliquez sur l'icône d'installation dans la barre d'adresse</li>
+              <li>Sur Safari iOS : appuyez sur "Partager" puis "Sur l'écran d'accueil"</li>
+              <li>Sur Android : appuyez sur "Ajouter à l'écran d'accueil"</li>
+            </ol>
+            <p class="text-gray-600 dark:text-gray-300 mt-4">
+              Une fois installée, l'application fonctionne même hors ligne !
+            </p>
           </div>
         </div>
       </div>

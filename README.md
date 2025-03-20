@@ -42,6 +42,12 @@ npm install
 
 # Lancer le serveur de développement
 npm run dev
+
+# Construire pour la production
+npm run build
+
+# Prévisualiser la version de production
+npm run preview
 ```
 
 ## Structure des Fichiers CSV
@@ -60,28 +66,28 @@ hiver,soir,Gratin de pâtes,Pâtes avec sauce béchamel et fromage
 - `nom` : nom du repas
 - `description` : description du repas
 
+## Stockage des données
+
+L'application utilise le stockage local du navigateur (localStorage) pour sauvegarder :
+- Les repas importés
+- Les préférences utilisateur
+- Les menus générés récemment
+
+Aucune donnée n'est envoyée à un serveur externe.
+
 ## Technologies Utilisées
 
 - Vue.js 3
+- Vue Router
 - TailwindCSS
-- Firebase Authentication
 - Chart.js
 - Iconify
+- Vite
+- PWA (Progressive Web App)
 
 ## Configuration
 
-### Firebase
-
-Créez un fichier `.env` à la racine du projet :
-
-```env
-VITE_FIREBASE_API_KEY=votre-api-key
-VITE_FIREBASE_AUTH_DOMAIN=votre-auth-domain
-VITE_FIREBASE_PROJECT_ID=votre-project-id
-VITE_FIREBASE_STORAGE_BUCKET=votre-storage-bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=votre-messaging-sender-id
-VITE_FIREBASE_APP_ID=votre-app-id
-```
+Le fichier `.env` à la racine du projet peut être utilisé pour ajouter des variables d'environnement supplémentaires si nécessaire.
 
 ## Fonctionnalités à Venir
 
