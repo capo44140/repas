@@ -1,0 +1,41 @@
+saison,type,nom,description
+hiver,midi,Soupe de légumes,Soupe chaude avec carottes et pommes de terre
+hiver,midi,Pot-au-feu,Viande bouillie avec légumes de saison
+hiver,midi,Tartiflette,Pommes de terre gratinées au reblochon et lardons
+hiver,midi,Blanquette de veau,Ragoût de veau à la sauce blanche et légumes
+hiver,midi,Bœuf bourguignon,Ragoût de bœuf au vin rouge et champignons
+hiver,soir,Gratin de pâtes,Pâtes avec sauce béchamel et fromage
+hiver,soir,Velouté de potiron,Soupe onctueuse à base de potiron et crème
+hiver,soir,Quiche lorraine,Tarte salée aux lardons et œufs
+hiver,soir,Croque-monsieur,Sandwich chaud au jambon et fromage
+hiver,soir,Soupe à l'oignon,Soupe traditionnelle avec croûtons et fromage
+printemps,midi,Salade niçoise,Salade avec thon, œufs et légumes frais
+printemps,midi,Quiche aux asperges,Tarte salée avec asperges et crème
+printemps,midi,Risotto aux petits pois,Riz crémeux aux petits pois et parmesan
+printemps,midi,Tagliatelles au saumon,Pâtes avec saumon frais et crème
+printemps,midi,Filet de cabillaud,Poisson blanc avec purée de pommes de terre
+printemps,soir,Salade composée,Salade fraîche avec tomates et concombres
+printemps,soir,Omelette aux herbes,Omelette avec ciboulette et persil frais
+printemps,soir,Cake aux légumes,Cake salé avec légumes de printemps
+printemps,soir,Tarte aux légumes,Tarte avec courgettes et tomates
+printemps,soir,Soupe froide de concombre,Soupe rafraîchissante au yaourt
+ete,midi,Salade grecque,Salade avec feta, olives et concombre
+ete,midi,Taboulé,Salade de semoule aux herbes fraîches et légumes
+ete,midi,Tomates farcies,Tomates garnies de viande hachée et riz
+ete,midi,Poke bowl,Bol de riz avec poisson cru et légumes
+ete,midi,Gaspacho,Soupe froide à base de tomates et poivrons
+ete,soir,Barbecue,Viandes grillées et légumes d'été
+ete,soir,Salade de riz,Salade froide avec thon et maïs
+ete,soir,Bruschetta,Tranches de pain grillé avec tomates et basilic
+ete,soir,Melon jambon,Tranches de melon servies avec du jambon cru
+ete,soir,Tartines d'avocat,Pain avec avocat écrasé et œuf poché
+automne,midi,Gratin dauphinois,Pommes de terre gratinées à la crème
+automne,midi,Poulet chasseur,Poulet mijoté aux champignons et tomates
+automne,midi,Boulettes de viande,Boulettes avec sauce tomate et pâtes
+automne,midi,Rôti de porc,Rôti avec purée de patates douces
+automne,midi,Curry de légumes,Légumes d'automne en sauce curry
+automne,soir,Velouté de potimarron,Soupe onctueuse à base de potimarron
+automne,soir,Tarte aux champignons,Tarte salée avec champignons de saison
+automne,soir,Grilled cheese,Sandwich au fromage fondu
+automne,soir,Gnocchis à la sauge,Petites pâtes de pomme de terre à la sauge
+automne,soir,Soupe de lentilles,Soupe réconfortante aux lentilles et carottes 

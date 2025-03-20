@@ -1,0 +1,35 @@
+saison,type,nom,description,dimanche_midi
+hiver,midi,Soupe de légumes,Soupe chaude avec carottes et pommes de terre,
+hiver,soir,Gratin de pâtes,Pâtes avec sauce béchamel et fromage,
+printemps,midi,Salade composée,Salade avec légumes de printemps,
+printemps,soir,Omelette,Omelette tomate gruyere salade,
+printemps,midi,Poulet,Poulet olives pomme de terre,oui
+printemps,midi,Filet Mignon,Filet mignon pomme de terre,oui
+printemps,soir,Tartine,tartine tomate mozarella,
+printemps,soir,Gratins,gratin de choux fleurs,
+printemps,soir,Tarte,tarte aux thons,
+printemps,soir,Soupe,soupe courgette,
+printemps,soir,Soupe,soupe butternut,
+printemps,soir,Cake,cake olive thon,
+printemps,soir,Pizza,pizza,
+printemps,soir,Purée,purée patates douces,
+printemps,soir,Légumes,Carotte vichy,
+printemps,soir,Wrap,wrap nuggets fromage,
+printemps,soir,Pâtes,coquilettes jambon,
+printemps,soir,Pâtes,feuilletés jambon champignons,
+printemps,soir,Tartines,tartine de chevres,
+printemps,soir,Légumes,Brocolis jambon,
+printemps,soir,Tartes,tartes courgettes chèvres,
+printemps,soir,Légumes,pomme de terres de carottes,
+printemps,soir,Rissoto,rissoto coquilettes lardons,
+printemps,midi,Galettes,galettes complète jambon fromage,
+printemps,midi,Raclette,Raclette charcuterie,
+printemps,midi,Saucisses Lentilles,lentilles saucisses,
+printemps,midi,Salade composée,Salade avec légumes de printemps,
+ete,soir,Ratatouille,Plat provençal avec légumes d'été,
+automne,midi,Velouté de potiron,Soupe crémeuse à la citrouille,
+Rôti de boeuf,Rôti avec pommes de terre,midi,hiver,oui
+Poulet rôti,Poulet avec légumes,midi,hiver,oui
+Couscous,Couscous royal,midi,hiver,oui
+Pâtes carbonara,Pâtes à la carbonara,midi,hiver,
+Salade composée,Salade avec thon,midi,hiver,
