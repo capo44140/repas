@@ -26,7 +26,10 @@
             <Icon icon="ph:clock" class="w-4 h-4 mr-2" />
             <span>Temps de préparation: environ {{ featuredMeal.prepTime }} minutes</span>
           </div>
-          <button class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-md transition-colors duration-200">
+          <button 
+            @click="openRecipeDetail"
+            class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-md transition-colors duration-200"
+          >
             Voir la recette complète
           </button>
         </div>
@@ -127,6 +130,13 @@
         <StatisticsChart />
       </div>
     </div>
+    
+    <!-- Ajout du modal pour les détails de recette -->
+    <RecipeDetailModal 
+      :is-open="isRecipeModalOpen" 
+      :recipe="featuredMeal" 
+      @close="closeRecipeDetail" 
+    />
   </div>
 </template>
 
@@ -135,12 +145,36 @@ import { ref, onMounted } from 'vue';
 import { Icon } from '@iconify/vue';
 import MonthlyMealsChart from '../components/MonthlyMealsChart.vue';
 import StatisticsChart from '../components/StatisticsChart.vue';
+import RecipeDetailModal from '../components/RecipeDetailModal.vue';
+import { useRouter } from 'vue-router';
 
 // Données simulées pour le tableau de bord
 const totalMeals = ref(382);
 const mealsGrowth = ref(11.01);
 const generatedMenus = ref(215);
 const menusGrowth = ref(9.05);
+
+// Variables pour le modal de recette
+const isRecipeModalOpen = ref(false);
+const router = useRouter();
+
+// Function to open the recipe detail modal
+const openRecipeDetail = () => {
+  isRecipeModalOpen.value = true;
+};
+
+// Function to close the recipe detail modal
+const closeRecipeDetail = () => {
+  isRecipeModalOpen.value = false;
+};
+
+// You can also keep the existing navigation function if you want both options
+const showRecipeDetails = (meal) => {
+  if (meal) {
+    const recipeData = encodeURIComponent(JSON.stringify(meal));
+    router.push(`/recipe/${recipeData}`);
+  }
+};
 
 // Données des repas (simulées)
 const meals = [
@@ -205,4 +239,4 @@ onMounted(() => {
 .grid {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
-</style> 
+</style>
