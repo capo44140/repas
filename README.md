@@ -30,6 +30,17 @@ Une application web moderne pour la planification et la gestion des repas, déve
 - Barre latérale rétractable
 - Notifications en temps réel
 - Interface intuitive et moderne
+- Visualisation détaillée des recettes
+
+### 5. Détails des Recettes
+- Instructions pas à pas pour chaque recette
+- Liste complète des ingrédients avec quantités
+- Valeurs nutritionnelles (calories, protéines, glucides, lipides)
+- Conseils de préparation personnalisés
+- Indication du niveau de difficulté
+- Étiquettes pour les régimes spécifiques (végétarien, etc.)
+- Galerie de photos pour visualiser les étapes de préparation
+- Visualiseur d'images en plein écran
 
 ## Installation
 
