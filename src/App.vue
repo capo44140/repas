@@ -23,7 +23,7 @@
       >
         <!-- Logo -->
         <div class="p-4 flex items-center h-16">
-          <img src="/vite.svg" alt="Logo" class="h-8 w-8 flex-shrink-0" />
+          <img src="/favicon.ico" alt="Logo RepasFork" class="h-8 w-8 flex-shrink-0" />
           <h1 
             class="ml-3 font-semibold text-lg transition-opacity duration-300"
             :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
