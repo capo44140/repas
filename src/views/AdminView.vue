@@ -578,6 +578,7 @@ onMounted(() => {
                       }"
                       class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
                       :disabled="isUpdating"
+                      title="Mettre à jour depuis Spoonacular"
                     >
                       <Icon icon="ph:cloud-arrow-up" class="w-5 h-5" />
                       <span v-if="isUpdating" class="animate-spin ml-1">⟳</span>
