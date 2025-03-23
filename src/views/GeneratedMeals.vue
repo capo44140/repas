@@ -60,10 +60,10 @@
             <div class="w-full px-4 py-2 bg-blue-50 text-blue-800 rounded-md">
               <div class="flex items-center">
                 <Icon icon="ph:info" class="flex-shrink-0 w-5 h-5 mr-2" />
-                <span>Utilisation du fichier modèle</span>
+                <span>Utilisation de la base de données</span>
               </div>
               <p class="text-xs mt-1">
-                Les repas sont gérés via l'interface d'administration
+                Les repas sont gérés via la base de données
               </p>
             </div>
           </div>
@@ -231,10 +231,12 @@
 <script setup>
 import { ref, watch, computed, inject, onMounted } from 'vue';
 import { Icon } from '@iconify/vue';
+import { dataSourceService } from '../services/dataSource';
 
 // Injections
 const isSidebarOpen = inject('isSidebarOpen');
-const toggleSidebar = inject('toggleSidebar', () => {});  // Injection avec valeur par défaut
+const toggleSidebar = inject('toggleSidebar', () => {});
+const showToast = inject('showToast');
 
 // Fonction pour déterminer la saison actuelle
 const getCurrentSeason = () => {
@@ -263,13 +265,13 @@ const getCurrentSeason = () => {
 const weeks = ref(1);
 const season = ref(getCurrentSeason());
 const mealTypes = ref(['lunch', 'dinner']);
-const fileName = ref('modele_repas_finale.csv');
 const notification = ref({ show: false, type: '', message: '' });
 const generatedMeals = ref([]);
 const meals = ref([]);
 const loading = ref(false);
 const selectedMeals = ref([]);
 const showFilters = ref(true);
+const dataSource = ref('neon'); // Par défaut, utiliser Neon
 
 // Configuration des saisons
 const seasons = {
@@ -277,6 +279,14 @@ const seasons = {
   printemps: { icon: 'ph:flower', label: 'Printemps', months: [2, 3, 4] }, // mar, avr, mai
   ete: { icon: 'ph:sun', label: 'Été', months: [5, 6, 7] }, // juin, juil, août
   automne: { icon: 'ph:leaf', label: 'Automne', months: [8, 9, 10] } // sep, oct, nov
+};
+
+// Mapping des saisons de l'interface vers la base de données
+const seasonMapping = {
+  hiver: 'Hiver',
+  printemps: 'Printemps',
+  ete: 'Été',
+  automne: 'Automne'
 };
 
 // Watchers
@@ -294,79 +304,8 @@ const toggleFilters = () => {
   showFilters.value = !showFilters.value;
 };
 
-// Charger le fichier de repas par défaut
-const loadDefaultMeals = async () => {
-  try {
-    loading.value = true;
-    const response = await fetch('/modele_repas_finale.csv');
-    if (!response.ok) {
-      throw new Error(`Erreur lors du chargement du fichier: ${response.status}`);
-    }
-    
-    const content = await response.text();
-    parseCSV(content);
-    showNotification('success', 'Fichier modèle chargé avec succès');
-  } catch (error) {
-    console.error('Erreur lors du chargement du fichier modèle:', error);
-    showNotification('error', `Impossible de charger le fichier modèle: ${error.message}`);
-  } finally {
-    loading.value = false;
-  }
-};
-
-// Analyser le fichier CSV
-const parseCSV = (content) => {
-  // Séparation des lignes
-  const lines = content.split('\n');
-  
-  // Détection automatique du délimiteur
-  const delimiterCounts = {
-    ',': 0,
-    ';': 0,
-    '\t': 0,
-  };
-  
-  const firstLine = lines[0];
-  Object.keys(delimiterCounts).forEach(delimiter => {
-    delimiterCounts[delimiter] = (firstLine.match(new RegExp(delimiter, 'g')) || []).length;
-  });
-  
-  // Sélection du délimiteur le plus utilisé
-  let delimiter = ',';
-  let maxCount = 0;
-  Object.entries(delimiterCounts).forEach(([key, count]) => {
-    if (count > maxCount) {
-      maxCount = count;
-      delimiter = key;
-    }
-  });
-  
-  // Extraction des en-têtes
-  if (lines.length > 0) {
-    const headers = lines[0].split(delimiter).map(header => header.trim());
-    
-    // Traitement des données
-    const data = [];
-    for (let i = 1; i < lines.length; i++) {
-      if (lines[i].trim() === '') continue;
-      
-      const values = lines[i].split(delimiter);
-      const entry = {};
-      
-      headers.forEach((header, index) => {
-        entry[header] = values[index] ? values[index].trim() : '';
-      });
-      
-      data.push(entry);
-    }
-    
-    meals.value = data;
-  }
-};
-
-// Fonctions utilitaires
+// Fonction pour afficher les notifications
 const showNotification = (type, message) => {
-  const showToast = inject('showToast');
   if (showToast) {
     showToast({
       type,
@@ -382,45 +321,43 @@ const showNotification = (type, message) => {
   }
 };
 
-// Charger les repas au montage du composant
-onMounted(() => {
-  loadDefaultMeals();
-});
+// Charger les repas depuis Neon
+const loadMeals = async () => {
+  try {
+    loading.value = true;
+    dataSourceService.setDataSource('neon');
+    meals.value = await dataSourceService.loadRepas();
+    showNotification('success', 'Repas chargés avec succès depuis la base de données');
+  } catch (error) {
+    console.error('Erreur lors du chargement des repas:', error);
+    showNotification('error', `Impossible de charger les repas: ${error.message}`);
+  } finally {
+    loading.value = false;
+  }
+};
 
 // Génération des repas
 const generateMeals = () => {
   if (meals.value.length === 0) {
-    showNotification('error', 'Aucun repas disponible. Veuillez vérifier le fichier modèle.');
+    showNotification('error', 'Aucun repas disponible. Veuillez vérifier la base de données.');
     return;
   }
 
-  // Filtrer les repas selon la saison sélectionnée
+  // Filtrer les repas selon la saison sélectionnée et le moment de la journée
   const seasonMeals = {
     lunch: meals.value.filter(meal => 
-      meal.saison === season.value && 
-      meal.type === 'midi' && 
-      meal.dimanche_midi !== 'oui'
+      meal.saison === seasonMapping[season.value] && 
+      meal.moment_journee === 'midi'
     ),
     dinner: meals.value.filter(meal => 
-      meal.saison === season.value && 
-      meal.type === 'soir'
-    ),
-    sundayLunch: meals.value.filter(meal => 
-      meal.saison === season.value && 
-      meal.type === 'midi' && 
-      meal.dimanche_midi === 'oui'
+      meal.saison === seasonMapping[season.value] && 
+      meal.moment_journee === 'soir'
     )
   };
 
   // Vérifier si nous avons des repas pour midi et soir
   if (seasonMeals.lunch.length === 0 || seasonMeals.dinner.length === 0) {
     showNotification('error', `Aucun repas trouvé pour la saison "${seasons[season.value].label}"`);
-    return;
-  }
-
-  // Vérifier si nous avons des repas spéciaux pour le dimanche midi
-  if (seasonMeals.sundayLunch.length === 0) {
-    showNotification('warning', 'Aucun repas spécial trouvé pour le dimanche midi');
     return;
   }
 
@@ -436,37 +373,18 @@ const generateMeals = () => {
     // Générer les repas pour chaque jour de la semaine
     for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
       const dayConfig = selectedMeals.value[weekIndex][dayIndex];
-      const isSunday = dayIndex === 6;
 
       if (dayConfig.lunch) {
-        let meal;
-        if (isSunday) {
-          // Pour le dimanche midi, sélectionner uniquement parmi les repas spéciaux dimanche
-          if (seasonMeals.sundayLunch.length > 0) {
-            const randomIndex = Math.floor(Math.random() * seasonMeals.sundayLunch.length);
-            meal = seasonMeals.sundayLunch[randomIndex];
-            // Éviter les doublons si possible
-            if (seasonMeals.sundayLunch.length > weeks.value) {
-              seasonMeals.sundayLunch.splice(randomIndex, 1);
-            }
-          } else {
-            // Si pas de repas spécial dimanche, afficher un message d'erreur
-            showNotification('error', 'Aucun repas spécial disponible pour le dimanche midi');
-            return;
-          }
-        } else {
-          // Pour les autres jours, sélectionner un repas normal
-          const randomIndex = Math.floor(Math.random() * seasonMeals.lunch.length);
-          meal = seasonMeals.lunch[randomIndex];
-          // Retirer le repas pour éviter les doublons (à moins qu'il n'y ait pas assez de repas)
-          if (seasonMeals.lunch.length > 7) {
-            seasonMeals.lunch.splice(randomIndex, 1);
-          }
-        }
+        const randomIndex = Math.floor(Math.random() * seasonMeals.lunch.length);
+        const meal = seasonMeals.lunch[randomIndex];
         weekMeals.lunch[dayIndex] = {
           name: meal.nom,
-          description: meal.description
+          description: meal.notes || ''
         };
+        // Retirer le repas pour éviter les doublons (à moins qu'il n'y ait pas assez de repas)
+        if (seasonMeals.lunch.length > 7) {
+          seasonMeals.lunch.splice(randomIndex, 1);
+        }
       } else {
         weekMeals.lunch[dayIndex] = { name: '', description: '' };
       }
@@ -476,7 +394,7 @@ const generateMeals = () => {
         const meal = seasonMeals.dinner[randomIndex];
         weekMeals.dinner[dayIndex] = {
           name: meal.nom,
-          description: meal.description
+          description: meal.notes || ''
         };
         // Retirer le repas pour éviter les doublons (à moins qu'il n'y ait pas assez de repas)
         if (seasonMeals.dinner.length > 7) {
@@ -607,6 +525,11 @@ const sendByEmail = () => {
   
   showNotification('info', 'Ouverture de votre client de messagerie...');
 };
+
+// Charger les repas au montage du composant
+onMounted(() => {
+  loadMeals();
+});
 </script>
 
 <style>

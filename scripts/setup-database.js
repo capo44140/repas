@@ -44,6 +44,7 @@ async function setupDatabase() {
         nom VARCHAR(255) NOT NULL,
         type VARCHAR(50) NOT NULL,
         saison VARCHAR(50) NOT NULL,
+        moment_journee VARCHAR(10) NOT NULL CHECK (moment_journee IN ('midi', 'soir')),
         temps_preparation INTEGER,
         temps_cuisson INTEGER,
         temps_repos INTEGER,

@@ -66,6 +66,7 @@ export const neonService = {
           nom,
           type,
           saison,
+          moment_journee,
           temps_preparation,
           temps_cuisson,
           temps_repos,
@@ -123,13 +124,14 @@ export const neonService = {
 
       const result = await neonClient`
         INSERT INTO repas (
-          nom, type, saison, temps_preparation, temps_cuisson, 
+          nom, type, saison, moment_journee, temps_preparation, temps_cuisson, 
           temps_repos, temps_total, difficulte, cout, calories, 
           ingredients, instructions, notes, image_url
         ) VALUES (
           ${repas.nom},
           ${repas.type},
           ${repas.saison},
+          ${repas.moment_journee},
           ${repas.temps_preparation || null},
           ${repas.temps_cuisson || null},
           ${repas.temps_repos || null},
@@ -162,6 +164,7 @@ export const neonService = {
           nom = ${repas.nom},
           type = ${repas.type},
           saison = ${repas.saison},
+          moment_journee = ${repas.moment_journee},
           temps_preparation = ${repas.temps_preparation || null},
           temps_cuisson = ${repas.temps_cuisson || null},
           temps_repos = ${repas.temps_repos || null},
