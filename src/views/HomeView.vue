@@ -147,6 +147,7 @@ import MonthlyMealsChart from '../components/MonthlyMealsChart.vue';
 import StatisticsChart from '../components/StatisticsChart.vue';
 import RecipeDetailModal from '../components/RecipeDetailModal.vue';
 import { useRouter } from 'vue-router';
+import { neonService } from '../services/neon';
 
 // Données simulées pour le tableau de bord
 const totalMeals = ref(382);
@@ -157,6 +158,16 @@ const menusGrowth = ref(9.05);
 // Variables pour le modal de recette
 const isRecipeModalOpen = ref(false);
 const router = useRouter();
+
+// Repas en vedette
+const featuredMeal = ref({
+  name: '',
+  season: '',
+  type: '',
+  description: '',
+  prepTime: 0,
+  image: ''
+});
 
 // Function to open the recipe detail modal
 const openRecipeDetail = () => {
@@ -176,62 +187,33 @@ const showRecipeDetails = (meal) => {
   }
 };
 
-// Données des repas (simulées)
-const meals = [
-  {
-    id: 1,
-    name: 'Gratin dauphinois',
-    season: 'Hiver',
-    type: 'Plat',
-    description: 'Un délicieux gratin de pommes de terre avec de la crème et du fromage, parfait pour accompagner une viande ou servir comme plat principal avec une salade.',
-    prepTime: 45,
-    image: 'https://images.unsplash.com/photo-1568600891621-50f697b9a1c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z3JhdGluJTIwZGF1cGhpbm9pc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60'
-  },
-  {
-    id: 2,
-    name: 'Salade niçoise',
-    season: 'Été',
-    type: 'Entrée',
-    description: 'Cette salade méditerranéenne fraîche combine des tomates, des œufs durs, du thon, des olives noires et des haricots verts pour un repas léger mais complet.',
-    prepTime: 20,
-    image: 'https://images.unsplash.com/photo-1595587870672-c79b47875c6a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8c2FsYWRlJTIwbmljb2lzZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60'
-  },
-  {
-    id: 3,
-    name: 'Soupe à l\'oignon',
-    season: 'Automne',
-    type: 'Entrée',
-    description: 'Un classique français réconfortant, avec des oignons caramélisés mijotés dans un bouillon savoureux, garni de croûtons et de fromage gratiné.',
-    prepTime: 60,
-    image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8b25pb24lMjBzb3VwfGVufDB8fDB8fHww&auto=format&fit=crop&w=800&q=60'
-  },
-  {
-    id: 4,
-    name: 'Ratatouille',
-    season: 'Été',
-    type: 'Plat',
-    description: 'Un ragoût provençal coloré de légumes d\'été, comprenant des aubergines, des courgettes, des poivrons et des tomates, parfumé à l\'huile d\'olive et aux herbes de Provence.',
-    prepTime: 50,
-    image: 'https://images.unsplash.com/photo-1572453800999-e8d2d0d95b0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmF0YXRvdWlsbGV8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=800&q=60'
-  },
-  {
-    id: 5,
-    name: 'Tarte Tatin',
-    season: 'Automne',
-    type: 'Dessert',
-    description: 'Un dessert traditionnel français où des pommes caramélisées sont recouvertes d\'une pâte feuilletée et cuites ensemble, puis renversées pour servir.',
-    prepTime: 55,
-    image: 'https://images.unsplash.com/photo-1557943819-b09ae56a3a13?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dGFydGUlMjB0YXRpbnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60'
+// Charger un repas aléatoire depuis la base de données
+const loadRandomMeal = async () => {
+  try {
+    const repas = await neonService.getAllRepas();
+    if (repas && repas.length > 0) {
+      const randomIndex = Math.floor(Math.random() * repas.length);
+      const randomMeal = repas[randomIndex];
+      
+      // Adapter les données pour l'affichage
+      featuredMeal.value = {
+        name: randomMeal.nom,
+        season: randomMeal.saison,
+        type: randomMeal.type,
+        description: randomMeal.notes || 'Description non disponible',
+        prepTime: randomMeal.temps_preparation || 0,
+        image: randomMeal.image_url || '',
+        ingredients: randomMeal.ingredients || [],
+        instructions: randomMeal.instructions || []
+      };
+    }
+  } catch (error) {
+    console.error('Erreur lors du chargement du repas aléatoire:', error);
   }
-];
-
-// Sélectionner un repas aléatoire pour mettre en vedette
-const featuredMeal = ref({});
+};
 
 onMounted(() => {
-  // Sélectionner un repas aléatoire
-  const randomIndex = Math.floor(Math.random() * meals.length);
-  featuredMeal.value = meals[randomIndex];
+  loadRandomMeal();
 });
 </script>
 
