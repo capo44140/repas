@@ -13,6 +13,7 @@ const isEditing = ref(false);
 const seasons = ['hiver', 'printemps', 'ete', 'automne'];
 const mealTypes = ['midi', 'soir'];
 const isLoading = ref(false);
+const isUpdating = ref(false);
 
 const repasList = ref([]);
 const currentId = ref(null);
@@ -40,7 +41,7 @@ const router = useRouter();
 // Charger la liste des repas
 const loadRepas = async () => {
   try {
-    repasList.value = await dataSourceService.loadRepas();
+    repasList.value = await neonService.getAllRepas();
   } catch (error) {
     console.error('Erreur lors du chargement des repas:', error);
     showNotification('Erreur lors du chargement des repas', 'error');
@@ -74,6 +75,12 @@ const resetForm = () => {
 // Gérer la soumission du formulaire
 const handleSubmit = async () => {
   try {
+    // Validation des champs obligatoires
+    if (!form.value.nom || !form.value.type || !form.value.saison || !form.value.moment_journee) {
+      showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+      return;
+    }
+
     const repasData = {
       ...form.value,
       ingredients: form.value.ingredients.split('\n').filter(i => i.trim()),
@@ -159,6 +166,69 @@ const logout = () => {
   router.push('/login');
 };
 
+// Fonction pour mettre à jour une recette depuis Spoonacular
+const updateFromSpoonacular = async (repas) => {
+  try {
+    if (!repas.id) {
+      showNotification('Impossible de mettre à jour : ID manquant', 'error');
+      return;
+    }
+
+    isUpdating.value = true;
+    const response = await fetch(
+      `https://api.spoonacular.com/recipes/complexSearch?apiKey=e7407f7f279942d782551bdd5bd3fb88&query=${encodeURIComponent(repas.nom)}&number=1&addRecipeInformation=true`
+    );
+    const data = await response.json();
+    
+    if (data.results && data.results[0]) {
+      const recipeData = data.results[0];
+      
+      // Convertir les ingrédients et instructions en tableaux
+      const ingredientsArray = recipeData.extendedIngredients?.map(ing => 
+        `${ing.amount} ${ing.unit} ${ing.name}`
+      ) || [];
+
+      const instructionsArray = recipeData.analyzedInstructions?.[0]?.steps?.map(step => 
+        step.step
+      ) || [];
+      
+      // Mettre à jour les informations
+      const updatedRepas = {
+        ...repas,
+        temps_preparation: recipeData.readyInMinutes || repas.temps_preparation,
+        temps_cuisson: recipeData.cookingMinutes || repas.temps_cuisson,
+        temps_total: recipeData.readyInMinutes || repas.temps_total,
+        difficulte: recipeData.dishTypes?.includes('easy') ? 'Facile' : 
+                   recipeData.dishTypes?.includes('medium') ? 'Moyen' : 'Difficile',
+        cout: recipeData.pricePerServing < 100 ? 'Bas' : 
+              recipeData.pricePerServing < 200 ? 'Moyen' : 'Élevé',
+        calories: recipeData.calories || repas.calories,
+        ingredients: ingredientsArray,
+        instructions: instructionsArray,
+        image_url: recipeData.image || repas.image_url,
+        notes: `Source: Spoonacular\nTemps de préparation: ${recipeData.readyInMinutes} minutes\nPortions: ${recipeData.servings}`
+      };
+
+      console.log('ID du repas à mettre à jour:', repas.id);
+      console.log('Données mises à jour:', updatedRepas);
+
+      // Mettre à jour directement avec le service Neon
+      const result = await neonService.updateRepas(repas.id, updatedRepas);
+      console.log('Résultat de la mise à jour:', result);
+      
+      await loadRepas();
+      showNotification('Recette mise à jour avec succès depuis Spoonacular', 'success');
+    } else {
+      showNotification('Aucune donnée trouvée pour cette recette', 'error');
+    }
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour:', error);
+    showNotification('Erreur lors de la mise à jour de la recette', 'error');
+  } finally {
+    isUpdating.value = false;
+  }
+};
+
 onMounted(() => {
   loadRepas();
 });
@@ -197,7 +267,9 @@ onMounted(() => {
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom du repas</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Nom du repas <span class="text-red-500">*</span>
+            </label>
             <input 
               v-model="form.nom" 
               type="text" 
@@ -206,7 +278,9 @@ onMounted(() => {
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Type <span class="text-red-500">*</span>
+            </label>
             <select 
               v-model="form.type" 
               required
@@ -220,7 +294,9 @@ onMounted(() => {
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Saison</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Saison <span class="text-red-500">*</span>
+            </label>
             <select 
               v-model="form.saison" 
               required
@@ -234,7 +310,9 @@ onMounted(() => {
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Moment de la journée</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Moment de la journée <span class="text-red-500">*</span>
+            </label>
             <select 
               v-model="form.moment_journee" 
               required
@@ -399,19 +477,31 @@ onMounted(() => {
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ meal.type }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ meal.saison }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ meal.moment_journee }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button 
-                    @click="editRepas(meal)"
-                    class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
-                  >
-                    Modifier
-                  </button>
-                  <button 
-                    @click="deleteRepas(meal.id)"
-                    class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                  >
-                    Supprimer
-                  </button>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                  <div class="flex space-x-2">
+                    <button 
+                      @click="editRepas(meal)"
+                      class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      <Icon icon="ph:pencil" class="w-5 h-5" />
+                    </button>
+                    <button 
+                      @click="deleteRepas(meal.id)"
+                      class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                    >
+                      <Icon icon="ph:trash" class="w-5 h-5" />
+                    </button>
+                    <button 
+                      @click="() => {
+                        console.log('Objet repas complet:', meal);
+                        updateFromSpoonacular(meal);
+                      }"
+                      class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                      :disabled="isUpdating"
+                    >
+                      <Icon icon="ph:cloud-arrow-up" class="w-5 h-5" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>

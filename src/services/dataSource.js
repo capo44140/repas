@@ -21,7 +21,13 @@ const dataSourceService = {
   // Charger les repas depuis la source appropriée
   async loadRepas() {
     if (dataSource.value === 'neon') {
-      return await neonService.getAllRepas();
+      try {
+        const result = await neonService.getAllRepas();
+        return result;
+      } catch (error) {
+        console.error('Erreur lors du chargement des repas:', error);
+        throw new Error('Impossible de charger les repas: ' + error.message);
+      }
     } else {
       try {
         const response = await fetch('/modele_repas_finale.csv');

@@ -101,8 +101,8 @@ export const neonService = {
       console.log(`${formattedResults.length} repas récupérés et formatés`);
       return formattedResults;
     } catch (error) {
-      console.error('Erreur détaillée lors de la récupération des repas:', error);
-      throw new Error('Impossible de récupérer les repas: ' + error.message);
+      console.error('Erreur lors du chargement des repas:', error);
+      throw new Error('Impossible de charger les repas: ' + error.message);
     }
   },
 
@@ -155,9 +155,14 @@ export const neonService = {
 
   async updateRepas(id, repas) {
     try {
+      console.log('Mise à jour du repas avec ID:', id);
+      console.log('Données reçues:', repas);
+
       // Préparer les tableaux pour PostgreSQL
       const ingredientsArray = toPostgresArray(repas.ingredients || []);
       const instructionsArray = toPostgresArray(repas.instructions || []);
+
+      console.log('Tableaux préparés:', { ingredientsArray, instructionsArray });
 
       const result = await neonClient`
         UPDATE repas SET 
@@ -180,10 +185,12 @@ export const neonService = {
         WHERE id = ${id}
         RETURNING *
       `;
+
+      console.log('Résultat de la requête:', result);
       return result?.[0] || null;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du repas:', error);
-      throw new Error('Impossible de mettre à jour le repas: ' + error.message);
+      console.error('Erreur dans updateRepas:', error);
+      throw error;
     }
   },
 
