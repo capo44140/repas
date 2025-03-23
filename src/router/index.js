@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import GeneratedMealsView from '../views/GeneratedMealsView.vue'
 import GeneratedMeals from '../views/GeneratedMeals.vue'
 import AdminView from '../views/AdminView.vue'
+import LoginForm from '../components/LoginForm.vue'
 
 const routes = [
   {
@@ -21,9 +22,15 @@ const routes = [
     component: HomeView
   },
   {
+    path: '/login',
+    name: 'login',
+    component: LoginForm
+  },
+  {
     path: '/admin',
     name: 'admin',
-    component: AdminView
+    component: AdminView,
+    meta: { requiresAuth: true }
   },
   {
     path: '/preferences',
@@ -48,5 +55,16 @@ const router = createRouter({
     }
   }
 })
+
+// Navigation Guard
+router.beforeEach((to, from, next) => {
+  const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+
+  if (to.meta.requiresAuth && !isAdminLoggedIn) {
+    next('/login');
+  } else {
+    next();
+  }
+});
 
 export default router

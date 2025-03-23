@@ -3,6 +3,7 @@ import { ref, reactive, onMounted, inject } from 'vue';
 import { Icon } from '@iconify/vue';
 import { dataSourceService } from '../services/dataSource';
 import { neonService } from '../services/neon';
+import { useRouter } from 'vue-router';
 
 // Injection du mode sombre
 const isDarkMode = inject('isDarkMode', ref(false));
@@ -56,6 +57,8 @@ const form = ref({
   notes: '',
   image_url: ''
 });
+
+const router = useRouter();
 
 // Charger la liste des repas
 const loadRepas = async () => {
@@ -512,6 +515,12 @@ const handleImageError = (event) => {
   `;
 };
 
+// Fonction de déconnexion
+const logout = () => {
+  localStorage.removeItem('isAdminLoggedIn');
+  router.push('/login');
+};
+
 onMounted(() => {
   // Charger automatiquement le fichier CSV par défaut
   loadDefaultCSV();
@@ -526,6 +535,13 @@ onMounted(() => {
         Administration des repas
       </h1>
       <div class="flex items-center space-x-4">
+        <button 
+          @click="logout"
+          class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2"
+        >
+          <Icon icon="ph:sign-out" class="w-5 h-5" />
+          <span>Déconnexion</span>
+        </button>
         <label class="text-sm font-medium" :class="{ 'text-gray-700': !isDarkMode, 'text-gray-300': isDarkMode }">
           Source de données:
         </label>
