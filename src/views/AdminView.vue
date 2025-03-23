@@ -16,6 +16,7 @@ const seasons = ['hiver', 'printemps', 'ete', 'automne'];
 const mealTypes = ['midi', 'soir'];
 const isLoading = ref(false);
 const isUpdating = ref(false);
+const isUpdatingOpenFood = ref(false);
 
 const repasList = ref([]);
 const currentId = ref(null);
@@ -35,7 +36,8 @@ const form = ref({
   ingredients: '',
   instructions: '',
   notes: '',
-  image_url: ''
+  image_url: '',
+  nutritional_info: null
 });
 
 const router = useRouter();
@@ -228,6 +230,81 @@ const updateFromSpoonacular = async (repas) => {
     showNotification('Erreur lors de la mise à jour de la recette', 'error');
   } finally {
     isUpdating.value = false;
+  }
+};
+
+// Fonction pour mettre à jour une recette depuis Open Food Facts
+const updateFromOpenFoodFacts = async (repas) => {
+  try {
+    if (!repas.id) {
+      showNotification('Impossible de mettre à jour : ID manquant', 'error');
+      return;
+    }
+
+    isUpdatingOpenFood.value = true;
+    
+    // Recherche par nom du produit
+    const searchTerm = encodeURIComponent(repas.nom);
+    const response = await fetch(
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${searchTerm}&search_simple=1&action=process&json=1`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Erreur API: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.products && data.products.length > 0) {
+      // Prendre le premier résultat
+      const product = data.products[0];
+      
+      // Extraire les informations nutritionnelles
+      const nutritionalInfo = {
+        calories: product.nutriments?.energy_value || product.nutriments?.['energy-kcal_100g'] || null,
+        proteines: product.nutriments?.proteins_100g || null,
+        glucides: product.nutriments?.carbohydrates_100g || null,
+        lipides: product.nutriments?.fat_100g || null,
+        fibres: product.nutriments?.fiber_100g || null,
+        sel: product.nutriments?.salt_100g || null,
+        sucres: product.nutriments?.sugars_100g || null,
+        source: 'Open Food Facts'
+      };
+      
+      // Extraire les ingrédients si disponibles
+      let ingredientsArray = repas.ingredients;
+      if (product.ingredients_text && product.ingredients_text.trim() !== '') {
+        ingredientsArray = product.ingredients_text.split(',').map(ing => ing.trim());
+      }
+      
+      // Mettre à jour les informations
+      const updatedRepas = {
+        ...repas,
+        calories: nutritionalInfo.calories || repas.calories,
+        ingredients: ingredientsArray,
+        image_url: product.image_url || repas.image_url,
+        nutritional_info: nutritionalInfo,
+        notes: repas.notes ? `${repas.notes}\n\nSource nutritionnelle: Open Food Facts` : 
+                            `Source nutritionnelle: Open Food Facts`
+      };
+      
+      console.log('ID du repas à mettre à jour:', repas.id);
+      console.log('Données mises à jour depuis Open Food Facts:', updatedRepas);
+      
+      // Mettre à jour directement avec le service Neon
+      const result = await neonService.updateRepas(repas.id, updatedRepas);
+      console.log('Résultat de la mise à jour:', result);
+      
+      await loadRepas();
+      showNotification('Informations nutritionnelles mises à jour avec succès depuis Open Food Facts', 'success');
+    } else {
+      showNotification('Aucune donnée trouvée dans Open Food Facts pour cette recette', 'error');
+    }
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour depuis Open Food Facts:', error);
+    showNotification('Erreur lors de la mise à jour des informations nutritionnelles', 'error');
+  } finally {
+    isUpdatingOpenFood.value = false;
   }
 };
 
@@ -479,6 +556,7 @@ onMounted(() => {
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ meal.type }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ meal.saison }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ meal.moment_journee }}</td>
+                <!-- Dans la section des actions du tableau -->
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                   <div class="flex space-x-2">
                     <button 
@@ -502,6 +580,16 @@ onMounted(() => {
                       :disabled="isUpdating"
                     >
                       <Icon icon="ph:cloud-arrow-up" class="w-5 h-5" />
+                      <span v-if="isUpdating" class="animate-spin ml-1">⟳</span>
+                    </button>
+                    <button 
+                      @click="updateFromOpenFoodFacts(meal)"
+                      class="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300"
+                      :disabled="isUpdatingOpenFood"
+                      title="Mettre à jour depuis Open Food Facts"
+                    >
+                      <Icon icon="mdi:food-apple" class="w-5 h-5" />
+                      <span v-if="isUpdatingOpenFood" class="animate-spin ml-1">⟳</span>
                     </button>
                   </div>
                 </td>
@@ -521,4 +609,4 @@ onMounted(() => {
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
-</style> 
+</style>
