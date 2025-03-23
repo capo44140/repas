@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, inject } from 'vue';
 import { Icon } from '@iconify/vue';
+import { dataSourceService } from '../services/dataSource';
 
 // État pour le fichier CSV et les données
 const file = ref(null);
@@ -30,6 +31,141 @@ const exportOptions = reactive({
   includeHeaders: true,
   delimiter: ',',
 });
+
+const repasList = ref([]);
+const currentId = ref(null);
+const dataSource = ref('csv');
+
+const form = ref({
+  nom: '',
+  type: '',
+  saison: '',
+  temps_preparation: null,
+  temps_cuisson: null,
+  temps_repos: null,
+  temps_total: null,
+  difficulte: '',
+  cout: '',
+  calories: null,
+  ingredients: '',
+  instructions: '',
+  notes: '',
+  image_url: ''
+});
+
+// Charger la liste des repas
+const loadRepas = async () => {
+  try {
+    repasList.value = await dataSourceService.loadRepas();
+  } catch (error) {
+    console.error('Erreur lors du chargement des repas:', error);
+    showNotification('Erreur lors du chargement des repas', 'error');
+  }
+};
+
+// Changer la source de données
+const changeDataSource = async (source) => {
+  try {
+    dataSource.value = source;
+    dataSourceService.setDataSource(source);
+    await loadRepas();
+  } catch (error) {
+    console.error('Erreur lors du changement de source:', error);
+    showNotification('Erreur lors du changement de source de données', 'error');
+  }
+};
+
+// Réinitialiser le formulaire
+const resetForm = () => {
+  form.value = {
+    nom: '',
+    type: '',
+    saison: '',
+    temps_preparation: null,
+    temps_cuisson: null,
+    temps_repos: null,
+    temps_total: null,
+    difficulte: '',
+    cout: '',
+    calories: null,
+    ingredients: '',
+    instructions: '',
+    notes: '',
+    image_url: ''
+  };
+  
+  // Réinitialisation des champs supplémentaires
+  newMeal.value = {
+    nom: '',
+    description: '',
+    type: 'midi',
+    saison: 'hiver',
+    dimanche_midi: ''
+  };
+  
+  isEditing.value = false;
+  currentId.value = null;
+};
+
+// Gérer la soumission du formulaire
+const handleSubmit = async () => {
+  try {
+    const repasData = {
+      ...form.value,
+      ingredients: form.value.ingredients.split('\n').filter(i => i.trim()),
+      instructions: form.value.instructions.split('\n').filter(i => i.trim())
+    };
+
+    if (isEditing.value) {
+      await dataSourceService.updateRepas(currentId.value, repasData);
+      showNotification('Repas mis à jour avec succès', 'success');
+    } else {
+      await dataSourceService.addRepas(repasData);
+      showNotification('Repas ajouté avec succès', 'success');
+    }
+
+    await loadRepas();
+    resetForm();
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde du repas:', error);
+    showNotification(error.message, 'error');
+  }
+};
+
+// Éditer un repas
+const editRepas = (repas) => {
+  if (dataSource.value === 'csv') {
+    showNotification('La modification n\'est pas disponible en mode CSV', 'error');
+    return;
+  }
+  
+  form.value = {
+    ...repas,
+    ingredients: Array.isArray(repas.ingredients) ? repas.ingredients.join('\n') : '',
+    instructions: Array.isArray(repas.instructions) ? repas.instructions.join('\n') : ''
+  };
+  isEditing.value = true;
+  currentId.value = repas.id;
+};
+
+// Supprimer un repas
+const deleteRepas = async (id) => {
+  if (dataSource.value === 'csv') {
+    showNotification('La suppression n\'est pas disponible en mode CSV', 'error');
+    return;
+  }
+
+  if (confirm('Êtes-vous sûr de vouloir supprimer ce repas ?')) {
+    try {
+      await dataSourceService.deleteRepas(id);
+      await loadRepas();
+      showNotification('Repas supprimé avec succès', 'success');
+    } catch (error) {
+      console.error('Erreur lors de la suppression du repas:', error);
+      showNotification(error.message, 'error');
+    }
+  }
+};
 
 // Fonction pour charger le fichier CSV par défaut
 const loadDefaultCSV = async () => {
@@ -274,7 +410,6 @@ const showNotification = (message, type = 'success') => {
       title: type === 'success' ? 'Succès' : type === 'error' ? 'Erreur' : 'Information'
     });
   } else {
-    // Fallback au cas où le provider n'existe pas
     notification.show = true;
     notification.message = message;
     notification.type = type;
@@ -300,16 +435,6 @@ const resetAll = () => {
   if (fileInput.value) {
     fileInput.value.value = '';
   }
-};
-
-const resetForm = () => {
-  newMeal.value = {
-    nom: '',
-    description: '',
-    type: 'midi',
-    saison: 'hiver',
-    dimanche_midi: ''
-  };
 };
 
 // Dans la fonction d'ajout de repas
@@ -353,304 +478,176 @@ const columns = [
 onMounted(() => {
   // Charger automatiquement le fichier CSV par défaut
   loadDefaultCSV();
+  loadRepas();
 });
 </script>
 
 <template>
-  <div class="p-6 bg-app">
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-primary mb-4">Administration des Repas</h1>
-      <p class="text-secondary mb-4">
-        Importez et modifiez votre fichier CSV de repas. Le fichier doit contenir au minimum les colonnes : saison, type, nom, description.
-      </p>
+  <div class="p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Administration des repas</h1>
+      <div class="flex items-center space-x-4">
+        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Source de données :</label>
+        <select v-model="dataSource" @change="changeDataSource(dataSource)"
+          class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+          <option value="csv">Fichier CSV</option>
+          <option value="neon">Base de données Neon</option>
+        </select>
+      </div>
     </div>
-    
+
     <!-- Notification -->
-    <div 
-      v-if="notification.show" 
-      class="fixed top-20 right-4 p-4 rounded-lg shadow-md z-50 transition-all duration-300"
+    <div v-if="notification.show"
+      class="fixed top-4 right-4 p-4 rounded-lg shadow-lg transition-all duration-300"
       :class="{
-        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100': notification.type === 'success',
-        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100': notification.type === 'error'
-      }"
-    >
-      <div class="flex items-center">
-        <Icon 
-          :icon="notification.type === 'success' ? 'ph:check-circle' : 'ph:x-circle'" 
-          class="w-5 h-5 mr-2" 
-        />
-        <span>{{ notification.message }}</span>
-      </div>
+        'bg-green-100 text-green-800': notification.type === 'success',
+        'bg-red-100 text-red-800': notification.type === 'error'
+      }">
+      {{ notification.message }}
     </div>
-    
-    <div class="bg-card rounded-lg shadow-sm p-6 mb-6 border border-theme">
-      <h2 class="text-xl font-semibold text-primary mb-4">Importer un fichier CSV</h2>
-      
-      <!-- Zone de glisser-déposer -->
-      <div 
-        class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 mb-4 text-center"
-        @dragover="handleDragOver"
-        @drop="handleDrop"
-      >
-        <div v-if="!file">
-          <Icon icon="ph:upload" class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-2" />
-          <p class="text-secondary mb-2">Glissez et déposez votre fichier CSV ici</p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">ou</p>
-          <input 
-            type="file" 
-            ref="fileInput"
-            accept=".csv" 
-            class="hidden" 
-            @change="handleFileSelect"
-          >
-          <div class="flex flex-col sm:flex-row justify-center gap-3">
-            <button 
-              @click="fileInput.click()"
-              class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-            >
-              Sélectionner un fichier
-            </button>
-            <button 
-              @click="loadDefaultCSV"
-              class="px-4 py-2 bg-success-500 text-white rounded-lg hover:bg-success-600 transition-colors"
-              :disabled="isLoading"
-            >
-              <div class="flex items-center justify-center">
-                <Icon v-if="isLoading" icon="ph:spinner" class="w-4 h-4 mr-2 animate-spin" />
-                <span>Charger le fichier modèle</span>
-              </div>
-            </button>
+
+    <!-- Formulaire d'ajout/modification -->
+    <div v-if="dataSource === 'neon'" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+      <h2 class="text-xl font-semibold mb-4">{{ isEditing ? 'Modifier le repas' : 'Ajouter un repas' }}</h2>
+      <form @submit.prevent="handleSubmit" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom</label>
+            <input v-model="form.nom" type="text" required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
+            <select v-model="form.type" required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+              <option value="entrée">Entrée</option>
+              <option value="plat">Plat</option>
+              <option value="dessert">Dessert</option>
+              <option value="boisson">Boisson</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Saison</label>
+            <select v-model="form.saison" required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+              <option value="printemps">Printemps</option>
+              <option value="été">Été</option>
+              <option value="automne">Automne</option>
+              <option value="hiver">Hiver</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Difficulté</label>
+            <select v-model="form.difficulte"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+              <option value="facile">Facile</option>
+              <option value="moyen">Moyen</option>
+              <option value="difficile">Difficile</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Coût</label>
+            <select v-model="form.cout"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+              <option value="€">€</option>
+              <option value="€€">€€</option>
+              <option value="€€€">€€€</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Calories</label>
+            <input v-model="form.calories" type="number"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Temps de préparation (min)</label>
+            <input v-model="form.temps_preparation" type="number"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Temps de cuisson (min)</label>
+            <input v-model="form.temps_cuisson" type="number"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Temps de repos (min)</label>
+            <input v-model="form.temps_repos" type="number"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Temps total (min)</label>
+            <input v-model="form.temps_total" type="number"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Ingrédients</label>
+            <textarea v-model="form.ingredients" rows="4"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+              placeholder="Un ingrédient par ligne"></textarea>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Instructions</label>
+            <textarea v-model="form.instructions" rows="4"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
+              placeholder="Une instruction par ligne"></textarea>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+            <textarea v-model="form.notes" rows="2"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"></textarea>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL de l'image</label>
+            <input v-model="form.image_url" type="url"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
           </div>
         </div>
-        <div v-else class="flex flex-col items-center">
-          <Icon icon="ph:file-csv" class="w-12 h-12 text-primary-500 mb-2" />
-          <p class="text-secondary mb-2">{{ fileName }}</p>
-          <div class="flex space-x-3 mt-2">
-            <button 
-              @click="resetAll"
-              class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-            >
-              Réinitialiser
-            </button>
-          </div>
+        <div class="flex justify-end space-x-4">
+          <button type="button" @click="resetForm"
+            class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+            Réinitialiser
+          </button>
+          <button type="submit"
+            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            {{ isEditing ? 'Mettre à jour' : 'Ajouter' }}
+          </button>
         </div>
-      </div>
+      </form>
     </div>
-    
-    <!-- Prévisualisation et édition -->
-    <div v-if="showPreview" class="bg-card rounded-lg shadow-sm p-6 border border-theme">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-semibold text-primary">Données du fichier</h2>
-        <div class="flex space-x-2">
-          <button 
-            @click="isEditing = !isEditing"
-            class="px-3 py-1.5 flex items-center text-sm rounded-lg transition-colors"
-            :class="isEditing ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : 'bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-100'"
-          >
-            <Icon :icon="isEditing ? 'ph:check' : 'ph:plus'" class="w-4 h-4 mr-1" />
-            {{ isEditing ? 'Terminer' : 'Ajouter une ligne' }}
-          </button>
-          <button 
-            @click="exportCSV"
-            class="px-3 py-1.5 flex items-center text-sm bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-100 rounded-lg hover:bg-success-200 dark:hover:bg-success-800 transition-colors"
-          >
-            <Icon icon="ph:download" class="w-4 h-4 mr-1" />
-            Exporter CSV
-          </button>
-          <button 
-            @click="saveToDefaultFile"
-            class="px-3 py-1.5 flex items-center text-sm bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-100 rounded-lg hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors"
-          >
-            <Icon icon="ph:floppy-disk" class="w-4 h-4 mr-1" />
-            Enregistrer comme modèle
-          </button>
-        </div>
+
+    <!-- Liste des repas -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-xl font-semibold">Liste des repas</h2>
       </div>
-      
-      <!-- Tableau des données -->
       <div class="overflow-x-auto">
-        <table class="w-full min-w-full border-collapse">
-          <thead>
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">#</th>
-              <th 
-                v-for="(header, index) in headers" 
-                :key="index"
-                class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider"
-              >
-                {{ header }}
-              </th>
-              <th class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nom</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Saison</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- Formulaire d'ajout de ligne -->
-            <tr v-if="isEditing" class="border-b border-gray-200 dark:border-gray-700">
-              <td class="px-4 py-2 text-sm">+</td>
-              <td 
-                v-for="(header, index) in headers" 
-                :key="index"
-                class="px-4 py-2"
-              >
-                <div class="max-w-xs">
-                  <select 
-                    v-if="header === 'saison'"
-                    v-model="newRow[header]"
-                    class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-primary"
-                  >
-                    <option value="" disabled>Sélectionner...</option>
-                    <option v-for="season in seasons" :key="season" :value="season">
-                      {{ season === 'ete' ? 'été' : season }}
-                    </option>
-                  </select>
-                  <select 
-                    v-else-if="header === 'type'"
-                    v-model="newRow[header]"
-                    class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-primary"
-                  >
-                    <option value="" disabled>Sélectionner...</option>
-                    <option v-for="type in mealTypes" :key="type" :value="type">
-                      {{ type }}
-                    </option>
-                  </select>
-                  <template v-else-if="header === 'dimanche_midi'">
-                    <input 
-                      type="checkbox"
-                      v-model="newRow[header]"
-                      class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-primary-500 focus:ring-primary-500"
-                      :true-value="'oui'"
-                      :false-value="''"
-                    />
-                  </template>
-                  <input 
-                    v-else
-                    type="text" 
-                    v-model="newRow[header]"
-                    class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-primary"
-                  />
-                </div>
-              </td>
-              <td class="px-4 py-2">
-                <button 
-                  @click="addRow"
-                  class="p-1.5 text-sm bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-100 rounded hover:bg-success-200 dark:hover:bg-success-800 transition-colors"
-                >
-                  <Icon icon="ph:check" class="w-4 h-4" />
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="repas in repasList" :key="repas.id">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ repas.nom }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ repas.type }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ repas.saison }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                <button @click="editRepas(repas)"
+                  class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">
+                  Modifier
                 </button>
-              </td>
-            </tr>
-            
-            <!-- Lignes de données -->
-            <tr 
-              v-for="(row, rowIndex) in csvData" 
-              :key="rowIndex"
-              class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              <td class="px-4 py-2 text-sm text-secondary">{{ rowIndex + 1 }}</td>
-              <td 
-                v-for="(header, colIndex) in headers" 
-                :key="colIndex"
-                class="px-4 py-2"
-                @dblclick="editCell(rowIndex, colIndex)"
-              >
-                <div v-if="editingCell.row === rowIndex && editingCell.col === colIndex" class="max-w-xs">
-                  <div class="flex items-center">
-                    <template v-if="header === 'dimanche_midi'">
-                      <input 
-                        type="checkbox"
-                        v-model="editingCell.value"
-                        class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-primary-500 focus:ring-primary-500"
-                        :true-value="'oui'"
-                        :false-value="''"
-                        @change="saveEdit"
-                      />
-                    </template>
-                    <input 
-                      v-else
-                      type="text" 
-                      v-model="editingCell.value" 
-                      class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-primary"
-                      @keyup.enter="saveEdit"
-                      @blur="saveEdit"
-                      ref="editInput"
-                      autofocus
-                    />
-                  </div>
-                </div>
-                <div v-else class="truncate max-w-xs">
-                  <template v-if="header === 'dimanche_midi'">
-                    <input 
-                      type="checkbox"
-                      :checked="row[header] === 'oui'"
-                      class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-primary-500 focus:ring-primary-500"
-                      disabled
-                    />
-                  </template>
-                  <template v-else>
-                    {{ row[header] }}
-                  </template>
-                </div>
-              </td>
-              <td class="px-4 py-2">
-                <button 
-                  @click="deleteRow(rowIndex)"
-                  class="p-1.5 text-sm bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100 rounded hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
-                >
-                  <Icon icon="ph:trash" class="w-4 h-4" />
+                <button @click="deleteRepas(repas.id)"
+                  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                  Supprimer
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
-      </div>
-      
-      <!-- Message si aucune donnée -->
-      <div v-if="csvData.length === 0" class="p-8 text-center text-secondary">
-        <p>Aucune donnée trouvée dans le fichier.</p>
-      </div>
-      
-      <!-- Statistiques -->
-      <div v-else class="mt-4 text-sm text-secondary">
-        <p>{{ csvData.length }} repas chargés</p>
-      </div>
-    </div>
-    
-    <!-- Aide et instructions -->
-    <div class="bg-card rounded-lg shadow-sm p-6 mt-6 border border-theme">
-      <h2 class="text-xl font-semibold text-primary mb-4">Aide et Instructions</h2>
-      
-      <div class="space-y-4">
-        <div>
-          <h3 class="text-lg font-medium text-primary mb-2">Format CSV requis</h3>
-          <p class="text-secondary mb-2">Votre fichier CSV doit contenir les colonnes suivantes :</p>
-          <ul class="list-disc pl-5 text-secondary">
-            <li><strong>saison</strong> : hiver, printemps, ete, automne</li>
-            <li><strong>type</strong> : midi, soir</li>
-            <li><strong>nom</strong> : nom du repas</li>
-            <li><strong>description</strong> : description du repas (optionnelle)</li>
-          </ul>
-        </div>
-        
-        <div>
-          <h3 class="text-lg font-medium text-primary mb-2">Exemple de contenu</h3>
-          <div class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg overflow-x-auto">
-            <pre class="text-sm text-secondary">saison,type,nom,description
-hiver,midi,Soupe de légumes,Soupe chaude avec carottes et pommes de terre
-hiver,soir,Gratin de pâtes,Pâtes avec sauce béchamel et fromage
-printemps,midi,Salade composée,Salade fraîche avec tomates et concombres
-ete,soir,Barbecue,Viandes grillées et légumes d'été
-automne,midi,Velouté de potiron,Soupe onctueuse à base de potiron et crème</pre>
-          </div>
-        </div>
-        
-        <div>
-          <h3 class="text-lg font-medium text-primary mb-2">Fonctionnalités</h3>
-          <ul class="list-disc pl-5 text-secondary">
-            <li>Double-cliquez sur une cellule pour la modifier</li>
-            <li>Utilisez le bouton "Ajouter une ligne" pour ajouter un nouveau repas</li>
-            <li>Exportez vos modifications avec le bouton "Exporter CSV"</li>
-          </ul>
-        </div>
       </div>
     </div>
   </div>
