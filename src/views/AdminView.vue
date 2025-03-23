@@ -2,6 +2,7 @@
 import { ref, reactive, onMounted, inject } from 'vue';
 import { Icon } from '@iconify/vue';
 import { dataSourceService } from '../services/dataSource';
+import { neonService } from '../services/neon';
 
 // État pour le fichier CSV et les données
 const file = ref(null);
@@ -64,10 +65,9 @@ const loadRepas = async () => {
 };
 
 // Changer la source de données
-const changeDataSource = async (source) => {
+const changeDataSource = async () => {
   try {
-    dataSource.value = source;
-    dataSourceService.setDataSource(source);
+    dataSourceService.setDataSource(dataSource.value);
     await loadRepas();
   } catch (error) {
     console.error('Erreur lors du changement de source:', error);
@@ -475,6 +475,28 @@ const columns = [
   { key: 'dimanche_midi', label: 'Dimanche Midi' }
 ];
 
+// Fonction pour importer les repas vers Neon
+const importToNeon = async () => {
+  try {
+    // Charger les repas depuis le CSV
+    const csvRepas = await dataSourceService.loadRepas();
+    
+    // Importer chaque repas vers Neon
+    for (const repas of csvRepas) {
+      await neonService.addRepas(repas);
+    }
+
+    // Afficher un message de succès
+    alert('Importation réussie ! Les repas ont été importés vers la base Neon.');
+    
+    // Recharger la liste des repas
+    await loadRepas();
+  } catch (error) {
+    console.error('Erreur lors de l\'importation:', error);
+    alert('Erreur lors de l\'importation des repas vers Neon.');
+  }
+};
+
 onMounted(() => {
   // Charger automatiquement le fichier CSV par défaut
   loadDefaultCSV();
@@ -487,12 +509,29 @@ onMounted(() => {
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold">Administration des repas</h1>
       <div class="flex items-center space-x-4">
-        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Source de données :</label>
-        <select v-model="dataSource" @change="changeDataSource(dataSource)"
-          class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+        <label class="text-sm font-medium">Source de données:</label>
+        <select 
+          v-model="dataSource" 
+          @change="changeDataSource"
+          class="px-3 py-2 border rounded-md"
+          :class="{
+            'bg-white border-gray-300': !isDarkMode,
+            'bg-gray-700 border-gray-600': isDarkMode
+          }"
+        >
           <option value="csv">Fichier CSV</option>
           <option value="neon">Base de données Neon</option>
         </select>
+
+        <!-- Bouton d'importation vers Neon -->
+        <button 
+          v-if="dataSource === 'csv'"
+          @click="importToNeon"
+          class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors duration-200 flex items-center space-x-2"
+        >
+          <Icon icon="ph:arrow-right" class="w-5 h-5" />
+          <span>Importer vers Neon</span>
+        </button>
       </div>
     </div>
 
