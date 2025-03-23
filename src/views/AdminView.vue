@@ -5,7 +5,7 @@ import { dataSourceService } from '../services/dataSource';
 import { neonService } from '../services/neon';
 import { useRouter } from 'vue-router';
 
-const SPOONACULAR_API_KEY = import.meta.env.APISPOONACULAR_KEY;
+const SPOONACULAR_API_KEY = import.meta.env.VITE_SPOONACULAR_API_KEY;
 
 // Injection du mode sombre
 const isDarkMode = inject('isDarkMode', ref(false));
@@ -90,10 +90,10 @@ const handleSubmit = async () => {
     };
 
     if (isEditing.value) {
-      await dataSourceService.updateRepas(currentId.value, repasData);
+      await neonService.updateRepas(currentId.value, repasData);
       showNotification('Repas mis à jour avec succès', 'success');
     } else {
-      await dataSourceService.addRepas(repasData);
+      await neonService.addRepas(repasData);
       showNotification('Repas ajouté avec succès', 'success');
     }
 
