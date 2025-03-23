@@ -79,14 +79,14 @@ const handleSubmit = async () => {
   try {
     // Validation des champs obligatoires
     if (!form.value.nom || !form.value.type || !form.value.saison || !form.value.moment_journee) {
-      showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+      showNotification('Champs obligatoires manquants', 'error');
       return;
     }
 
     const repasData = {
       ...form.value,
-      ingredients: form.value.ingredients.split('\n').filter(i => i.trim()),
-      instructions: form.value.instructions.split('\n').filter(i => i.trim())
+      ingredients: form.value.ingredients ? form.value.ingredients.split('\n').filter(i => i.trim()) : [],
+      instructions: form.value.instructions ? form.value.instructions.split('\n').filter(i => i.trim()) : []
     };
 
     if (isEditing.value) {
