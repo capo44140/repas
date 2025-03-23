@@ -160,24 +160,6 @@
             </span>
           </button>
 
-          <button 
-            @click="logout"
-            class="w-full flex items-center p-2 rounded-md transition-colors duration-200"
-            :class="{
-              'hover:bg-gray-100 text-gray-600': !isDarkMode,
-              'hover:bg-gray-700 text-gray-400': isDarkMode,
-              'justify-center': !isSidebarOpen,
-              'justify-start': isSidebarOpen
-            }"
-          >
-            <Icon icon="ph:sign-out" class="w-6 h-6 flex-shrink-0" />
-            <span 
-              class="ml-3 transition-opacity duration-300 whitespace-nowrap overflow-hidden"
-              :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
-            >
-              Déconnexion
-            </span>
-          </button>
         </div>
       </aside>
 
@@ -379,15 +361,6 @@ const onToastDismissed = () => {
   // Vous pouvez ajouter une logique supplémentaire ici si nécessaire
 };
 
-// Méthode de déconnexion simulée
-const logout = () => {
-  showToast({
-    message: 'Vous êtes déconnecté',
-    type: 'info',
-    title: 'Déconnexion'
-  });
-  // Dans une application réelle, vous mettriez ici la logique de déconnexion
-};
 
 // Fournir l'état et les fonctions à tous les composants enfants
 provide('isDarkMode', isDarkMode);
