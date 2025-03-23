@@ -4,6 +4,9 @@ import { Icon } from '@iconify/vue';
 import { dataSourceService } from '../services/dataSource';
 import { neonService } from '../services/neon';
 
+// Injection du mode sombre
+const isDarkMode = inject('isDarkMode', ref(false));
+
 // État pour le fichier CSV et les données
 const file = ref(null);
 const fileInput = ref(null);
@@ -497,6 +500,18 @@ const importToNeon = async () => {
   }
 };
 
+// Fonction pour gérer les erreurs de chargement d'image
+const handleImageError = (event) => {
+  event.target.src = ''; // Effacer l'URL de l'image en cas d'erreur
+  event.target.parentElement.innerHTML = `
+    <div class="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-md">
+      <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    </div>
+  `;
+};
+
 onMounted(() => {
   // Charger automatiquement le fichier CSV par défaut
   loadDefaultCSV();
@@ -507,16 +522,20 @@ onMounted(() => {
 <template>
   <div class="p-6">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Administration des repas</h1>
+      <h1 class="text-2xl font-bold" :class="{ 'text-gray-900': !isDarkMode, 'text-white': isDarkMode }">
+        Administration des repas
+      </h1>
       <div class="flex items-center space-x-4">
-        <label class="text-sm font-medium">Source de données:</label>
+        <label class="text-sm font-medium" :class="{ 'text-gray-700': !isDarkMode, 'text-gray-300': isDarkMode }">
+          Source de données:
+        </label>
         <select 
           v-model="dataSource" 
           @change="changeDataSource"
           class="px-3 py-2 border rounded-md"
           :class="{
-            'bg-white border-gray-300': !isDarkMode,
-            'bg-gray-700 border-gray-600': isDarkMode
+            'bg-white border-gray-300 text-gray-900': !isDarkMode,
+            'bg-gray-700 border-gray-600 text-white': isDarkMode
           }"
         >
           <option value="csv">Fichier CSV</option>
@@ -546,8 +565,16 @@ onMounted(() => {
     </div>
 
     <!-- Formulaire d'ajout/modification -->
-    <div v-if="dataSource === 'neon'" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-      <h2 class="text-xl font-semibold mb-4">{{ isEditing ? 'Modifier le repas' : 'Ajouter un repas' }}</h2>
+    <div v-if="dataSource === 'neon'" 
+      class="rounded-lg shadow p-6 mb-6"
+      :class="{
+        'bg-white': !isDarkMode,
+        'bg-gray-800': isDarkMode
+      }"
+    >
+      <h2 class="text-xl font-semibold mb-4" :class="{ 'text-gray-900': !isDarkMode, 'text-white': isDarkMode }">
+        {{ isEditing ? 'Modifier le repas' : 'Ajouter un repas' }}
+      </h2>
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -655,14 +682,27 @@ onMounted(() => {
     </div>
 
     <!-- Liste des repas -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 class="text-xl font-semibold">Liste des repas</h2>
+    <div class="rounded-lg shadow overflow-hidden"
+      :class="{
+        'bg-white': !isDarkMode,
+        'bg-gray-800': isDarkMode
+      }"
+    >
+      <div class="px-6 py-4 border-b"
+        :class="{
+          'border-gray-200': !isDarkMode,
+          'border-gray-700': isDarkMode
+        }"
+      >
+        <h2 class="text-xl font-semibold" :class="{ 'text-gray-900': !isDarkMode, 'text-white': isDarkMode }">
+          Liste des repas
+        </h2>
       </div>
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead class="bg-gray-50 dark:bg-gray-700">
             <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Image</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nom</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Saison</th>
@@ -671,6 +711,19 @@ onMounted(() => {
           </thead>
           <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             <tr v-for="repas in repasList" :key="repas.id">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div v-if="repas.image_url" class="w-16 h-16 relative">
+                  <img 
+                    :src="repas.image_url" 
+                    :alt="repas.nom"
+                    class="w-full h-full object-cover rounded-md"
+                    @error="handleImageError"
+                  />
+                </div>
+                <div v-else class="w-16 h-16 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-md">
+                  <Icon icon="ph:image" class="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                </div>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ repas.nom }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ repas.type }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ repas.saison }}</td>
