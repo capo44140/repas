@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import GeneratedMealsView from '../views/GeneratedMealsView.vue'
 import GeneratedMeals from '../views/GeneratedMeals.vue'
 import AdminView from '../views/AdminView.vue'
 
@@ -12,7 +13,7 @@ const routes = [
   {
     path: '/generated-meals',
     name: 'generated-meals',
-    component: GeneratedMeals
+    component: GeneratedMealsView
   },
   {
     path: '/statistics',
@@ -28,6 +29,11 @@ const routes = [
     path: '/preferences',
     name: 'preferences',
     component: () => import('../views/UserPreferencesView.vue')
+  },
+  {
+    path: '/generator',
+    name: 'generator',
+    component: GeneratedMeals
   }
 ]
 
