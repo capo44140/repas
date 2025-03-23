@@ -5,6 +5,8 @@ import { dataSourceService } from '../services/dataSource';
 import { neonService } from '../services/neon';
 import { useRouter } from 'vue-router';
 
+const SPOONACULAR_API_KEY = import.meta.env.APISPOONACULAR_KEY;
+
 // Injection du mode sombre
 const isDarkMode = inject('isDarkMode', ref(false));
 
@@ -176,7 +178,7 @@ const updateFromSpoonacular = async (repas) => {
 
     isUpdating.value = true;
     const response = await fetch(
-      `https://api.spoonacular.com/recipes/complexSearch?apiKey=e7407f7f279942d782551bdd5bd3fb88&query=${encodeURIComponent(repas.nom)}&number=1&addRecipeInformation=true`
+      `https://api.spoonacular.com/recipes/complexSearch?apiKey=${SPOONACULAR_API_KEY}&query=${encodeURIComponent(repas.nom)}&number=1&addRecipeInformation=true`
     );
     const data = await response.json();
     

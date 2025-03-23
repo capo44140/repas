@@ -16,7 +16,7 @@
           />
         </div>
       </div>
-
+      
       <!-- Contenu de l'accordéon -->
       <div 
         v-show="showFilters"
@@ -35,8 +35,8 @@
               max="4"
               class="w-full px-3 py-2 border rounded-md"
             />
-          </div>
-
+        </div>
+        
           <!-- Sélection de la saison -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -50,7 +50,7 @@
                 {{ s.label }}
               </option>
             </select>
-          </div>
+            </div>
 
           <!-- Remarque sur le fichier modèle -->
           <div>
@@ -58,23 +58,23 @@
               Source des repas
             </label>
             <div class="w-full px-4 py-2 bg-blue-50 text-blue-800 rounded-md">
-              <div class="flex items-center">
+            <div class="flex items-center">
                 <Icon icon="ph:info" class="flex-shrink-0 w-5 h-5 mr-2" />
                 <span>Utilisation de la base de données</span>
-              </div>
+            </div>
               <p class="text-xs mt-1">
                 Les repas sont gérés via la base de données
               </p>
             </div>
           </div>
         </div>
-
+        
         <!-- Grille de sélection des repas -->
         <div class="mt-6">
           <h3 class="text-lg font-medium text-gray-900 mb-4">
             Sélection des repas
-          </h3>
-          <div class="space-y-4">
+              </h3>
+              <div class="space-y-4">
             <div v-for="(week, weekIndex) in selectedMeals" :key="weekIndex" class="space-y-2">
               <h4 class="font-medium text-gray-700">
                 Semaine {{ weekIndex + 1 }}
@@ -105,7 +105,7 @@
             </div>
           </div>
         </div>
-
+        
         <!-- Bouton de génération -->
         <div class="mt-6">
           <button 
@@ -146,7 +146,7 @@
               Envoyer par email
             </button>
           </div>
-
+          
           <!-- Planning des repas -->
           <div v-for="(week, weekIndex) in generatedMeals" :key="weekIndex" class="bg-white rounded-lg shadow overflow-hidden">
             <div class="p-4 bg-gray-50">
@@ -274,7 +274,7 @@ const showFilters = ref(true);
 const dataSource = ref('neon'); // Par défaut, utiliser Neon
 
 // Configuration des saisons
-const seasons = {
+  const seasons = {
   hiver: { icon: 'ph:snowflake', label: 'Hiver', months: [11, 0, 1] }, // déc, jan, fév
   printemps: { icon: 'ph:flower', label: 'Printemps', months: [2, 3, 4] }, // mar, avr, mai
   ete: { icon: 'ph:sun', label: 'Été', months: [5, 6, 7] }, // juin, juil, août
