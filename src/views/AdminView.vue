@@ -45,6 +45,7 @@ const form = ref({
   nom: '',
   type: '',
   saison: '',
+  moment_journee: 'midi',
   temps_preparation: null,
   temps_cuisson: null,
   temps_repos: null,
@@ -87,6 +88,7 @@ const resetForm = () => {
     nom: '',
     type: '',
     saison: '',
+    moment_journee: 'midi',
     temps_preparation: null,
     temps_cuisson: null,
     temps_repos: null,
@@ -609,6 +611,14 @@ onMounted(() => {
             </select>
           </div>
           <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Moment de la journée</label>
+            <select v-model="form.moment_journee" required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+              <option value="midi">Midi</option>
+              <option value="soir">Soir</option>
+            </select>
+          </div>
+          <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Saison</label>
             <select v-model="form.saison" required
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
@@ -721,6 +731,7 @@ onMounted(() => {
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Image</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nom</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Moment</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Saison</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
             </tr>
@@ -742,6 +753,7 @@ onMounted(() => {
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ repas.nom }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ repas.type }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ repas.moment_journee }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ repas.saison }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                 <button @click="editRepas(repas)"
