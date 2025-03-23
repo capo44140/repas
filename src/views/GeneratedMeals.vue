@@ -283,10 +283,10 @@ const seasons = {
 
 // Mapping des saisons de l'interface vers la base de données
 const seasonMapping = {
-  hiver: 'Hiver',
-  printemps: 'Printemps',
-  ete: 'Été',
-  automne: 'Automne'
+  hiver: 'hiver',
+  printemps: 'printemps',
+  ete: 'ete',
+  automne: 'automne'
 };
 
 // Watchers
@@ -338,25 +338,37 @@ const loadMeals = async () => {
 
 // Génération des repas
 const generateMeals = () => {
+  console.log('Début de la génération des repas');
+  console.log('Nombre de repas disponibles:', meals.value.length);
+  console.log('Saison sélectionnée:', season.value);
+  console.log('Mapping de la saison:', seasonMapping[season.value]);
+
   if (meals.value.length === 0) {
+    console.log('Aucun repas disponible');
     showNotification('error', 'Aucun repas disponible. Veuillez vérifier la base de données.');
     return;
   }
 
   // Filtrer les repas selon la saison sélectionnée et le moment de la journée
   const seasonMeals = {
-    lunch: meals.value.filter(meal => 
-      meal.saison === seasonMapping[season.value] && 
-      meal.moment_journee === 'midi'
-    ),
-    dinner: meals.value.filter(meal => 
-      meal.saison === seasonMapping[season.value] && 
-      meal.moment_journee === 'soir'
-    )
+    lunch: meals.value.filter(meal => {
+      const matches = meal.saison === seasonMapping[season.value] && meal.moment_journee === 'midi';
+      console.log('Repas midi:', meal.nom, 'Saison:', meal.saison, 'Moment:', meal.moment_journee, 'Correspond:', matches);
+      return matches;
+    }),
+    dinner: meals.value.filter(meal => {
+      const matches = meal.saison === seasonMapping[season.value] && meal.moment_journee === 'soir';
+      console.log('Repas soir:', meal.nom, 'Saison:', meal.saison, 'Moment:', meal.moment_journee, 'Correspond:', matches);
+      return matches;
+    })
   };
+
+  console.log('Repas filtrés pour midi:', seasonMeals.lunch.length);
+  console.log('Repas filtrés pour soir:', seasonMeals.dinner.length);
 
   // Vérifier si nous avons des repas pour midi et soir
   if (seasonMeals.lunch.length === 0 || seasonMeals.dinner.length === 0) {
+    console.log('Pas assez de repas pour la saison');
     showNotification('error', `Aucun repas trouvé pour la saison "${seasons[season.value].label}"`);
     return;
   }

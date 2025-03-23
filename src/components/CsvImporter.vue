@@ -165,12 +165,35 @@ const parseCsv = (csvData) => {
 };
 
 const downloadTemplate = () => {
-  const template = `saison,type,nom,description
-hiver,midi,Soupe de légumes,Soupe chaude avec carottes et pommes de terre
-hiver,soir,Gratin de pâtes,Pâtes avec sauce béchamel et fromage
-printemps,midi,Salade composée,Salade avec légumes de printemps
-ete,soir,Ratatouille,Plat provençal avec légumes d'été
-automne,midi,Velouté de potiron,Soupe crémeuse à la citrouille`;
+  const template = `nom,type,saison,moment_journee,temps_preparation,temps_cuisson,temps_repos,temps_total,difficulte,cout,calories,ingredients,instructions,notes,image_url
+Blanquette de veau,Plat principal,hiver,midi,30,90,0,120,Moyen,Moyen,450,"500g de veau, 4 carottes, 2 oignons, 200g de champignons, 20cl de crème fraîche","1. Découper le veau en cubes
+2. Éplucher et couper les légumes
+3. Faire revenir la viande
+4. Ajouter les légumes et le bouillon
+5. Laisser mijoter
+6. Ajouter la crème fraîche","Parfait pour un repas familial réconfortant","https://example.com/blanquette.jpg"
+Salade niçoise,Entrée,ete,midi,20,0,0,20,Facile,Bas,300,"Tomates, olives noires, thon, œufs, anchois","1. Couper les tomates
+2. Faire cuire les œufs
+3. Assembler la salade
+4. Ajouter la vinaigrette","Idéal pour un repas léger","https://example.com/salade-nicoise.jpg"
+Soupe à l'oignon,Entrée,automne,soir,30,60,0,90,Moyen,Bas,250,"4 oignons, bouillon de bœuf, pain, fromage","1. Émincer les oignons
+2. Les faire caraméliser
+3. Ajouter le bouillon
+4. Laisser mijoter
+5. Ajouter le pain et le fromage","Parfait pour un dîner réconfortant","https://example.com/soupe-oignon.jpg"
+Risotto aux asperges,Plat principal,printemps,midi,20,25,0,45,Moyen,Moyen,400,"Riz arborio, asperges, parmesan, bouillon","1. Préparer le bouillon
+2. Faire revenir le riz
+3. Ajouter le bouillon progressivement
+4. Ajouter les asperges
+5. Finir avec le parmesan","Un plat printanier délicat","https://example.com/risotto-asperges.jpg"
+Ratatouille,Plat principal,ete,soir,30,45,0,75,Facile,Bas,200,"Tomates, aubergines, courgettes, poivrons, oignons","1. Couper tous les légumes
+2. Faire revenir les légumes
+3. Laisser mijoter
+4. Assaisonner","Un classique de l'été","https://example.com/ratatouille.jpg"
+Gratin dauphinois,Plat principal,hiver,soir,20,60,0,80,Facile,Moyen,350,"Pommes de terre, crème, lait, noix de muscade","1. Éplucher et couper les pommes de terre
+2. Faire chauffer la crème et le lait
+3. Assembler le gratin
+4. Cuire au four","Un plat réconfortant parfait pour l'hiver","https://example.com/gratin-dauphinois.jpg"`;
   
   const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
