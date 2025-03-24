@@ -72,6 +72,26 @@
             </span>
           </router-link>
 
+          <!-- Nouveau lien pour le partage -->
+          <router-link 
+            to="/share-recipes" 
+            class="flex items-center px-4 py-3 mb-1 transition-colors duration-200"
+            :class="{
+              'text-gray-600 hover:bg-gray-100 hover:text-gray-900': !isDarkMode,
+              'text-gray-400 hover:bg-gray-700 hover:text-gray-200': isDarkMode,
+              'justify-center': !isSidebarOpen,
+              'justify-start': isSidebarOpen
+            }"
+          >
+            <Icon icon="ph:share-network" class="w-6 h-6 flex-shrink-0" />
+            <span 
+              class="ml-3 transition-opacity duration-300 whitespace-nowrap overflow-hidden"
+              :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
+            >
+              Partager
+            </span>
+          </router-link>
+
           <router-link 
             to="/generator" 
             class="flex items-center px-4 py-3 mb-1 transition-colors duration-200"

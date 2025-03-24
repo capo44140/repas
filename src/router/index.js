@@ -4,6 +4,7 @@ import GeneratedMealsView from '../views/GeneratedMealsView.vue'
 import GeneratedMeals from '../views/GeneratedMeals.vue'
 import AdminView from '../views/AdminView.vue'
 import LoginForm from '../components/LoginForm.vue'
+import ShareRecipesView from '../views/ShareRecipesView.vue'
 
 const routes = [
   {
@@ -41,6 +42,11 @@ const routes = [
     path: '/generator',
     name: 'generator',
     component: GeneratedMeals
+  },
+  {
+    path: '/share-recipes',
+    name: 'share-recipes',
+    component: ShareRecipesView
   }
 ]
 
