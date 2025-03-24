@@ -5,6 +5,7 @@ import GeneratedMeals from '../views/GeneratedMeals.vue'
 import AdminView from '../views/AdminView.vue'
 import LoginForm from '../components/LoginForm.vue'
 import ShareRecipesView from '../views/ShareRecipesView.vue'
+import ShoppingListView from '../views/ShoppingListView.vue'
 
 const routes = [
   {
@@ -47,6 +48,15 @@ const routes = [
     path: '/share-recipes',
     name: 'share-recipes',
     component: ShareRecipesView
+  },
+  {
+    path: '/shopping-list',
+    name: 'shopping-list',
+    component: ShoppingListView,
+    meta: {
+      title: 'Liste de courses',
+      requiresAuth: true
+    }
   }
 ]
 

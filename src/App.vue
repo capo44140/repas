@@ -149,6 +149,26 @@
               Préférences
             </span>
           </router-link>
+          
+          <!-- Lien vers la liste de courses -->
+          <router-link 
+            to="/shopping-list" 
+            class="flex items-center px-4 py-3 mb-1 transition-colors duration-200"
+            :class="{
+              'text-gray-600 hover:bg-gray-100 hover:text-gray-900': !isDarkMode,
+              'text-gray-400 hover:bg-gray-700 hover:text-gray-200': isDarkMode,
+              'justify-center': !isSidebarOpen,
+              'justify-start': isSidebarOpen
+            }"
+          >
+            <Icon icon="ph:shopping-cart" class="w-6 h-6 flex-shrink-0" />
+            <span 
+              class="ml-3 transition-opacity duration-300 whitespace-nowrap overflow-hidden"
+              :class="{ 'opacity-0 w-0': !isSidebarOpen, 'opacity-100': isSidebarOpen }"
+            >
+              Liste de courses
+            </span>
+          </router-link>
         </nav>
 
         <!-- Actions -->
@@ -267,7 +287,8 @@ const menuItems = [
   { to: '/generated-meals', icon: 'ph:fork-knife', text: 'Repas générés' },
   { to: '/meal-suggestions', icon: 'ph:lightbulb', text: 'Propositions' },
   { to: '/statistics', icon: 'ph:chart-line', text: 'Statistiques' },
-  { to: '/admin', icon: 'ph:gear', text: 'Administration' }
+  { to: '/admin', icon: 'ph:gear', text: 'Administration' },  // Ajout de la virgule ici
+  { to: '/shopping-list', icon: 'ph:shopping-cart', text: 'Liste de courses' }
 ];
 
 provide('isSidebarOpen', isSidebarOpen);
