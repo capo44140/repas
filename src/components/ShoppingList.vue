@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-2xl font-bold">Liste de courses</h2>
       <div class="flex space-x-2">
-        <button @click="scanBarcode" 
+        <button @click="openBarcodeScanner" 
           class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
           <Icon icon="ph:barcode" class="w-5 h-5 mr-2" />
           Scanner
@@ -70,11 +70,32 @@
       </form>
     </div>
   </div>
+
+  <!-- Modal pour le scanner de code-barres -->
+  <div v-if="isScannerOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg max-w-lg w-full">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Scanner un code-barres</h3>
+        <button @click="closeBarcodeScanner" class="text-gray-500 hover:text-gray-700">
+          <Icon icon="ph:x" class="w-5 h-5" />
+        </button>
+      </div>
+      
+      <div id="scanner-container" class="relative h-64 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden mb-4"></div>
+      
+      <div class="flex justify-end">
+        <button @click="closeBarcodeScanner" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 mr-2">
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Icon } from '@iconify/vue';
+import Quagga from 'quagga';
 
 const items = ref([]);
 const newItem = ref({
@@ -110,15 +131,83 @@ const removeItem = (item) => {
   items.value = items.value.filter(i => i.id !== item.id);
 };
 
-const scanBarcode = async () => {
-  // À implémenter avec l'API de scan
-  console.log('Scan de code-barres...');
+const isScannerOpen = ref(false);
+
+const openBarcodeScanner = () => {
+  isScannerOpen.value = true;
+  // Initialiser le scanner après que le DOM soit mis à jour
+  setTimeout(initBarcodeScanner, 100);
 };
 
-const syncWithOnlineStore = async () => {
-  // À implémenter avec l'API de synchronisation
-  console.log('Synchronisation avec le magasin en ligne...');
+const closeBarcodeScanner = () => {
+  isScannerOpen.value = false;
+  Quagga.stop();
 };
+
+const initBarcodeScanner = () => {
+  Quagga.init({
+    inputStream: {
+      name: "Live",
+      type: "LiveStream",
+      target: document.querySelector("#scanner-container"),
+      constraints: {
+        facingMode: "environment"
+      },
+    },
+    decoder: {
+      readers: ["ean_reader", "ean_8_reader", "code_128_reader"]
+    }
+  }, function(err) {
+    if (err) {
+      console.error("Erreur d'initialisation du scanner:", err);
+      return;
+    }
+    Quagga.start();
+  });
+  
+  Quagga.onDetected(handleBarcodeDetected);
+};
+
+const handleBarcodeDetected = (result) => {
+  const code = result.codeResult.code;
+  console.log("Code-barres détecté:", code);
+  
+  // Rechercher le produit dans une base de données ou une API
+  lookupProduct(code);
+  
+  // Fermer le scanner
+  closeBarcodeScanner();
+};
+
+const lookupProduct = async (barcode) => {
+  try {
+    // Exemple d'appel à une API de produits (à remplacer par votre propre API)
+    // const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+    // const data = await response.json();
+    
+    // Pour l'exemple, on ajoute simplement un produit avec le code-barres
+    const newProduct = {
+      id: Date.now(),
+      name: `Produit (${barcode})`,
+      quantity: 1,
+      unit: 'unité',
+      category: 'Divers',
+      checked: false
+    };
+    
+    items.value.push(newProduct);
+    
+  } catch (error) {
+    console.error("Erreur lors de la recherche du produit:", error);
+  }
+};
+
+// Nettoyer Quagga lors du démontage du composant
+onUnmounted(() => {
+  if (Quagga) {
+    Quagga.stop();
+  }
+});
 </script>
 
 <style scoped>
