@@ -20,32 +20,12 @@ const dataSourceService = {
 
   // Charger les repas depuis la source appropriée
   async loadRepas() {
-    if (dataSource.value === 'neon') {
-      try {
-        const result = await neonService.getAllRepas();
-        return result;
-      } catch (error) {
-        console.error('Erreur lors du chargement des repas:', error);
-        throw new Error('Impossible de charger les repas: ' + error.message);
-      }
-    } else {
-      try {
-        const response = await fetch('/modele_repas_finale.csv');
-        const csvText = await response.text();
-        const result = Papa.parse(csvText, {
-          header: true,
-          skipEmptyLines: true
-        });
-        
-        return result.data.map(repas => ({
-          ...repas,
-          ingredients: repas.ingredients ? repas.ingredients.split('\n') : [],
-          instructions: repas.instructions ? repas.instructions.split('\n') : []
-        }));
-      } catch (error) {
-        console.error('Erreur lors du chargement du CSV:', error);
-        throw new Error('Impossible de charger le fichier CSV');
-      }
+    try {
+      const result = await neonService.getAllRepas();
+      return result;
+    } catch (error) {
+      console.error('Erreur lors du chargement des repas:', error);
+      throw new Error('Impossible de charger les repas: ' + error.message);
     }
   },
 

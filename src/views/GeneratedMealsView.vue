@@ -1,23 +1,8 @@
 <template>
   <div class="space-y-6">
-    <!-- En-tête avec titre et sélecteur de source -->
+    <!-- En-tête avec titre -->
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-bold">Recherche de repas</h1>
-      <div class="flex items-center space-x-4">
-        <label class="text-sm font-medium">Source de données:</label>
-        <select 
-          v-model="dataSource" 
-          @change="changeDataSource"
-          class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          :class="{
-            'bg-white': !isDarkMode,
-            'bg-gray-700 border-gray-600': isDarkMode
-          }"
-        >
-          <option value="csv">Fichier CSV</option>
-          <option value="neon">Base de données Neon</option>
-        </select>
-      </div>
     </div>
 
     <!-- Filtres -->
@@ -224,7 +209,6 @@ const { isDarkMode } = useDarkMode();
 
 const repasList = ref([]);
 const selectedRepas = ref(null);
-const dataSource = ref('csv');
 
 // Filtres
 const filters = ref({
@@ -239,16 +223,6 @@ const loadRepas = async () => {
     repasList.value = await dataSourceService.loadRepas();
   } catch (error) {
     console.error('Erreur lors du chargement des repas:', error);
-  }
-};
-
-// Changer la source de données
-const changeDataSource = async () => {
-  try {
-    dataSourceService.setDataSource(dataSource.value);
-    await loadRepas();
-  } catch (error) {
-    console.error('Erreur lors du changement de source:', error);
   }
 };
 
