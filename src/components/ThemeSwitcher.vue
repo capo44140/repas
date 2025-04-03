@@ -106,12 +106,66 @@ const saturation = ref(60);
 
 // Thèmes prédéfinis
 const themes = [
-  { id: 'blue', name: 'Bleu', primary: '#3B82F6', secondary: '#10B981' },
-  { id: 'purple', name: 'Violet', primary: '#8B5CF6', secondary: '#EC4899' },
-  { id: 'green', name: 'Vert', primary: '#10B981', secondary: '#6366F1' },
-  { id: 'red', name: 'Rouge', primary: '#EF4444', secondary: '#F59E0B' },
-  { id: 'amber', name: 'Ambre', primary: '#F59E0B', secondary: '#3B82F6' },
-  { id: 'custom', name: 'Personnalisé', primary: '#3B82F6', secondary: '#10B981' }
+  {
+    id: 'default',
+    name: 'Défaut',
+    colors: {
+      '--primary-color': '#3B82F6',
+      '--secondary-color': '#10B981',
+      '--background-color': '#FFFFFF',
+      '--text-color': '#111827'
+    }
+  },
+  {
+    id: 'purple',
+    name: 'Violet',
+    colors: {
+      '--primary-color': '#8B5CF6',
+      '--secondary-color': '#EC4899',
+      '--background-color': '#FFFFFF',
+      '--text-color': '#111827'
+    }
+  },
+  {
+    id: 'green',
+    name: 'Vert',
+    colors: {
+      '--primary-color': '#10B981',
+      '--secondary-color': '#6366F1',
+      '--background-color': '#FFFFFF',
+      '--text-color': '#111827'
+    }
+  },
+  {
+    id: 'red',
+    name: 'Rouge',
+    colors: {
+      '--primary-color': '#EF4444',
+      '--secondary-color': '#F59E0B',
+      '--background-color': '#FFFFFF',
+      '--text-color': '#111827'
+    }
+  },
+  {
+    id: 'amber',
+    name: 'Ambre',
+    colors: {
+      '--primary-color': '#F59E0B',
+      '--secondary-color': '#3B82F6',
+      '--background-color': '#FFFFFF',
+      '--text-color': '#111827'
+    }
+  },
+  {
+    id: 'custom',
+    name: 'Personnalisé',
+    colors: {
+      '--primary-color': '#3B82F6',
+      '--secondary-color': '#10B981',
+      '--background-color': '#FFFFFF',
+      '--text-color': '#111827'
+    }
+  }
 ];
 
 // Couleurs principales disponibles
@@ -180,14 +234,14 @@ const updateCustomTheme = () => {
   if (customTheme) {
     const color = primaryColors.find(c => c.id === customPrimaryColor.value);
     if (color) {
-      customTheme.primary = color.value;
+      customTheme.colors['--primary-color'] = color.value;
     }
   }
 };
 
 const getThemePreviewStyle = (theme) => {
   return {
-    background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primary}80 50%, ${theme.secondary}80 50%, ${theme.secondary} 100%)`
+    background: `linear-gradient(135deg, ${theme.colors['--primary-color']} 0%, ${theme.colors['--primary-color']}80 50%, ${theme.colors['--secondary-color']}80 50%, ${theme.colors['--secondary-color']} 100%)`
   };
 };
 
@@ -197,7 +251,7 @@ const applyTheme = () => {
   if (!theme) return;
   
   // Appliquer les changements (dans une application réelle, cela modifierait des variables CSS)
-  updateRootCSSVariables(theme.primary, saturation.value);
+  updateRootCSSVariables(theme.colors['--primary-color'], saturation.value);
   
   // Fermer la palette
   showPalette.value = false;
