@@ -163,14 +163,14 @@ const updateCustomTheme = () => {
   if (customTheme) {
     const color = primaryColors.value.find(c => c.id === customPrimaryColor.value);
     if (color) {
-      customTheme.primary = color.value;
+      customTheme.colors['--primary-color'] = color.value;
     }
   }
 };
 
 const getThemePreviewStyle = (theme) => {
   return {
-    background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primary}80 50%, ${theme.secondary}80 50%, ${theme.secondary} 100%)`
+    background: `linear-gradient(135deg, ${theme.colors['--primary-color']} 0%, ${theme.colors['--primary-color']}80 50%, ${theme.colors['--secondary-color']}80 50%, ${theme.colors['--secondary-color']} 100%)`
   };
 };
 

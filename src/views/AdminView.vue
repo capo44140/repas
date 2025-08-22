@@ -17,6 +17,32 @@ const {
   iconClasses,
 } = useThemeClasses();
 
+class APIError extends Error {
+  constructor(message, status, details = {}) {
+    super(message)
+    this.status = status
+    this.details = details
+  }
+}
+
+const handleApiError = (error) => {
+  if (error instanceof APIError) {
+    showNotification({
+      title: 'Erreur API',
+      message: error.message,
+      type: 'error',
+      details: error.details
+    })
+  } else {
+    showNotification({
+      title: 'Erreur inattendue',
+      message: 'Une erreur est survenue, veuillez réessayer',
+      type: 'error'
+    })
+  }
+  console.error('Error details:', error)
+}
+
 const SPOONACULAR_API_KEY = import.meta.env.VITE_SPOONACULAR_API_KEY;
 
 // Injection du mode sombre
