@@ -275,11 +275,15 @@ import ThemeSwitcher from './components/ThemeSwitcher.vue';
 import NetworkStatus from './components/NetworkStatus.vue';
 import OnboardingTutorial from './components/OnboardingTutorial.vue';
 import NotificationService from './services/NotificationService';
+import { useDarkMode } from './composables/useDarkMode';
 
 const isSidebarOpen = ref(localStorage.getItem('sidebarOpen') !== 'false');
 const windowWidth = ref(0);
 const isMobile = ref(false);
 const route = useRoute();
+
+// Utiliser le composable pour la gestion des thèmes
+const { isDarkMode, toggleDarkMode } = useDarkMode();
 
 // Menu items
 const menuItems = [
@@ -287,28 +291,11 @@ const menuItems = [
   { to: '/generated-meals', icon: 'ph:fork-knife', text: 'Repas générés' },
   { to: '/meal-suggestions', icon: 'ph:lightbulb', text: 'Propositions' },
   { to: '/statistics', icon: 'ph:chart-line', text: 'Statistiques' },
-  { to: '/admin', icon: 'ph:gear', text: 'Administration' },  // Ajout de la virgule ici
+  { to: '/admin', icon: 'ph:gear', text: 'Administration' },
   { to: '/shopping-list', icon: 'ph:shopping-cart', text: 'Liste de courses' }
 ];
 
 provide('isSidebarOpen', isSidebarOpen);
-
-// État du mode sombre
-const isDarkMode = ref(localStorage.getItem('darkMode') === 'true');
-const toggleDarkMode = () => {
-  isDarkMode.value = !isDarkMode.value;
-  localStorage.setItem('darkMode', isDarkMode.value);
-  document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light');
-};
-
-// Définir le thème au chargement
-onMounted(() => {
-  if (isDarkMode.value) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else {
-    document.documentElement.setAttribute('data-theme', 'light');
-  }
-});
 
 // Fonction pour vérifier si on est en mode desktop
 const isDesktop = () => windowWidth.value >= 768;
@@ -401,7 +388,6 @@ const showToast = ({ message, title = '', type = 'info', duration = 3000, positi
 const onToastDismissed = () => {
   // Vous pouvez ajouter une logique supplémentaire ici si nécessaire
 };
-
 
 // Fournir l'état et les fonctions à tous les composants enfants
 provide('isDarkMode', isDarkMode);

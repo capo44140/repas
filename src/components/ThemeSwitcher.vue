@@ -31,9 +31,9 @@
               @click="selectTheme(theme)"
               class="theme-option rounded-lg p-2 cursor-pointer transition-all border-2"
               :class="{ 
-                'border-primary-500': selectedTheme === theme.id,
-                'border-transparent': selectedTheme !== theme.id,
-                'hover:border-gray-300 dark:hover:border-gray-600': selectedTheme !== theme.id
+                'border-primary-500': currentTheme === theme.id,
+                'border-transparent': currentTheme !== theme.id,
+                'hover:border-gray-300 dark:hover:border-gray-600': currentTheme !== theme.id
               }"
             >
               <div class="flex flex-col items-center">
@@ -91,42 +91,27 @@
 </template>
 
 <script setup>
-import { ref, computed, inject, watch } from 'vue';
+import { ref, computed, inject } from 'vue';
 import { Icon } from '@iconify/vue';
+import { useDarkMode } from '../composables/useDarkMode';
 
-// Injecter le mode sombre
-const isDarkMode = inject('isDarkMode', ref(false));
+// Utiliser le composable pour la gestion des thèmes
+const {
+  isDarkMode,
+  currentTheme,
+  customPrimaryColor,
+  saturation,
+  themes,
+  primaryColors,
+  applyTheme: applyThemeComposable,
+  resetToDefault: resetToDefaultComposable
+} = useDarkMode();
+
+// Injecter la fonction showToast
 const showToast = inject('showToast', () => {});
 
-// États
+// États locaux
 const showPalette = ref(false);
-const selectedTheme = ref('blue');
-const customPrimaryColor = ref('blue');
-const saturation = ref(60);
-
-// Thèmes prédéfinis
-const themes = [
-  { id: 'blue', name: 'Bleu', primary: '#3B82F6', secondary: '#10B981' },
-  { id: 'purple', name: 'Violet', primary: '#8B5CF6', secondary: '#EC4899' },
-  { id: 'green', name: 'Vert', primary: '#10B981', secondary: '#6366F1' },
-  { id: 'red', name: 'Rouge', primary: '#EF4444', secondary: '#F59E0B' },
-  { id: 'amber', name: 'Ambre', primary: '#F59E0B', secondary: '#3B82F6' },
-  { id: 'custom', name: 'Personnalisé', primary: '#3B82F6', secondary: '#10B981' }
-];
-
-// Couleurs principales disponibles
-const primaryColors = [
-  { id: 'blue', value: '#3B82F6' },
-  { id: 'purple', value: '#8B5CF6' },
-  { id: 'green', value: '#10B981' },
-  { id: 'red', value: '#EF4444' },
-  { id: 'amber', value: '#F59E0B' },
-  { id: 'pink', value: '#EC4899' },
-  { id: 'indigo', value: '#6366F1' },
-  { id: 'teal', value: '#14B8A6' },
-  { id: 'cyan', value: '#06B6D4' },
-  { id: 'orange', value: '#F97316' }
-];
 
 // Classes CSS basées sur le mode sombre
 const labelClass = computed(() => 
@@ -159,9 +144,8 @@ const togglePalette = () => {
 };
 
 const selectTheme = (theme) => {
-  selectedTheme.value = theme.id;
   if (theme.id !== 'custom') {
-    const themeColor = primaryColors.find(c => c.id === theme.id);
+    const themeColor = primaryColors.value.find(c => c.id === theme.id);
     if (themeColor) {
       customPrimaryColor.value = themeColor.id;
     }
@@ -170,15 +154,14 @@ const selectTheme = (theme) => {
 
 const selectPrimaryColor = (colorId) => {
   customPrimaryColor.value = colorId;
-  selectedTheme.value = 'custom';
   updateCustomTheme();
 };
 
 const updateCustomTheme = () => {
   // Trouver le thème personnalisé et mettre à jour sa couleur
-  const customTheme = themes.find(t => t.id === 'custom');
+  const customTheme = themes.value.find(t => t.id === 'custom');
   if (customTheme) {
-    const color = primaryColors.find(c => c.id === customPrimaryColor.value);
+    const color = primaryColors.value.find(c => c.id === customPrimaryColor.value);
     if (color) {
       customTheme.primary = color.value;
     }
@@ -193,11 +176,11 @@ const getThemePreviewStyle = (theme) => {
 
 const applyTheme = () => {
   // Récupérer le thème sélectionné
-  const theme = themes.find(t => t.id === selectedTheme.value);
+  const theme = themes.value.find(t => t.id === currentTheme.value);
   if (!theme) return;
   
-  // Appliquer les changements (dans une application réelle, cela modifierait des variables CSS)
-  updateRootCSSVariables(theme.primary, saturation.value);
+  // Appliquer le thème via le composable
+  applyThemeComposable(currentTheme.value, customPrimaryColor.value, saturation.value);
   
   // Fermer la palette
   showPalette.value = false;
@@ -207,90 +190,15 @@ const applyTheme = () => {
     message: `Thème ${theme.name} appliqué avec succès`,
     type: 'success'
   });
-  
-  // Sauvegarder les préférences
-  saveThemePreferences();
 };
 
 const resetToDefault = () => {
-  selectedTheme.value = 'blue';
-  customPrimaryColor.value = 'blue';
-  saturation.value = 60;
-  updateCustomTheme();
-};
-
-const updateRootCSSVariables = (color, sat) => {
-  // Convertir la couleur hexadécimale en valeurs RGB
-  const hex = color.replace('#', '');
-  let r = parseInt(hex.substring(0, 2), 16);
-  let g = parseInt(hex.substring(2, 4), 16);
-  let b = parseInt(hex.substring(4, 6), 16);
-  
-  // Ajuster la saturation
-  const factor = sat / 100;
-  
-  // Mettre à jour les variables CSS pour la couleur primaire
-  document.documentElement.style.setProperty('--primary-50', adjustColor(r, g, b, 0.95, factor));
-  document.documentElement.style.setProperty('--primary-100', adjustColor(r, g, b, 0.9, factor));
-  document.documentElement.style.setProperty('--primary-200', adjustColor(r, g, b, 0.8, factor));
-  document.documentElement.style.setProperty('--primary-300', adjustColor(r, g, b, 0.7, factor));
-  document.documentElement.style.setProperty('--primary-400', adjustColor(r, g, b, 0.6, factor));
-  document.documentElement.style.setProperty('--primary-500', color);
-  document.documentElement.style.setProperty('--primary-600', adjustColor(r, g, b, 0.4, factor));
-  document.documentElement.style.setProperty('--primary-700', adjustColor(r, g, b, 0.3, factor));
-  document.documentElement.style.setProperty('--primary-800', adjustColor(r, g, b, 0.2, factor));
-  document.documentElement.style.setProperty('--primary-900', adjustColor(r, g, b, 0.1, factor));
-  
-  // Créer un événement de modification du thème
-  const event = new CustomEvent('theme-updated', { 
-    detail: { 
-      primary: color,
-      saturation: sat
-    } 
+  resetToDefaultComposable();
+  showToast({
+    message: 'Thème réinitialisé aux valeurs par défaut',
+    type: 'info'
   });
-  window.dispatchEvent(event);
 };
-
-// Fonction pour ajuster la couleur (clair/foncé)
-const adjustColor = (r, g, b, lightnessFactor, satFactor) => {
-  // Ajuster la luminosité
-  r = Math.min(255, Math.round(r + (255 - r) * lightnessFactor));
-  g = Math.min(255, Math.round(g + (255 - g) * lightnessFactor));
-  b = Math.min(255, Math.round(b + (255 - b) * lightnessFactor));
-  
-  // Convertir en hexa
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-};
-
-const saveThemePreferences = () => {
-  // Enregistrer les préférences dans le localStorage
-  const preferences = {
-    theme: selectedTheme.value,
-    primaryColor: customPrimaryColor.value,
-    saturation: saturation.value
-  };
-  
-  localStorage.setItem('themePreferences', JSON.stringify(preferences));
-};
-
-// Charger les préférences sauvegardées
-const loadThemePreferences = () => {
-  try {
-    const saved = localStorage.getItem('themePreferences');
-    if (saved) {
-      const preferences = JSON.parse(saved);
-      selectedTheme.value = preferences.theme || 'blue';
-      customPrimaryColor.value = preferences.primaryColor || 'blue';
-      saturation.value = preferences.saturation || 60;
-      updateCustomTheme();
-    }
-  } catch (error) {
-    console.error('Erreur lors du chargement des préférences de thème:', error);
-  }
-};
-
-// Charger les préférences au montage
-loadThemePreferences();
 </script>
 
 <style scoped>

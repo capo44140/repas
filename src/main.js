@@ -4,12 +4,16 @@ import router from './router'
 import './style.css';
 import { Icon } from '@iconify/vue'
 import ToastNotification from './components/ToastNotification.vue'
+import { useDarkMode } from './composables/useDarkMode'
 
 const app = createApp(App)
 
 // Enregistrement des composants globaux
 app.component('Icon', Icon)
 app.component('ToastNotification', ToastNotification)
+
+// Fournir le composable useDarkMode globalement
+app.provide('useDarkMode', useDarkMode)
 
 app.use(router)
 app.mount('#app')
