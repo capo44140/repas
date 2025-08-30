@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref } from 'vue';
 
 const props = defineProps({
   dropZoneId: {
@@ -106,4 +106,4 @@ function handleDrop(event) {
 .dark .drop-zone-hover {
   background-color: rgba(96, 165, 250, 0.05);
 }
-</style> 
+</style>

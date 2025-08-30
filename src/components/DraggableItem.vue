@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref } from 'vue';
 
 const props = defineProps({
   itemId: {
@@ -79,4 +79,4 @@ function handleDragEnd(event) {
   opacity: 0.5;
   z-index: 9999;
 }
-</style> 
+</style>

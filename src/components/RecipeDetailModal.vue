@@ -136,7 +136,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue';
+import { ref } from 'vue';
 import { Icon } from '@iconify/vue';
 
 const props = defineProps({

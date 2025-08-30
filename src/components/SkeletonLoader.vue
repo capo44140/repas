@@ -8,7 +8,6 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
 
 const props = defineProps({
   width: {
@@ -24,4 +23,4 @@ const props = defineProps({
     default: true
   }
 });
-</script> 
+</script>
