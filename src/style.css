@@ -255,7 +255,30 @@ button:active:not(:disabled) {
 /* Transitions pour les changements de thème */
 * {
   transition: background-color 0.3s ease, color 0.3s ease,
-    border-color 0.3s ease;
+    border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* Animation pour le changement de thème */
+@keyframes theme-transition-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.01); }
+  100% { transform: scale(1); }
+}
+
+.theme-transition {
+  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease !important;
+}
+
+.theme-pulse {
+  animation: theme-transition-pulse 0.5s ease-in-out;
+}
+
+/* Animation pour les éléments interactifs lors du changement de thème */
+.theme-transition button,
+.theme-transition .card,
+.theme-transition .theme-preview,
+.theme-transition .color-option {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 /* Styles spécifiques pour le mode sombre */

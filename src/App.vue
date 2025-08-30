@@ -207,10 +207,10 @@
       <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <!-- Header -->
         <header 
-          class="h-16 border-b flex items-center justify-between px-6 shadow-sm"
+          class="h-16 border-b flex items-center justify-between px-6 shadow-sm sticky top-0 z-10 bg-header"
           :class="{
-            'bg-white border-gray-200': !isDarkMode,
-            'bg-gray-800 border-gray-700': isDarkMode
+            'border-gray-200': !isDarkMode,
+            'border-gray-700': isDarkMode
           }"
         >
           <div class="flex items-center">
@@ -253,7 +253,17 @@
         </main>
         
         <!-- Composant de notification toast -->
-        <ToastNotification ref="toast" />
+        <ToastNotification 
+          v-model:show="toast.show"
+          :message="toast.message"
+          :title="toast.title"
+          :type="toast.type"
+          :duration="toast.duration"
+          :position="toast.position"
+          :dismissible="toast.dismissible"
+          :shake="toast.shake"
+          @dismissed="onToastDismissed"
+        />
         
         <!-- Tutoriel d'onboarding pour les nouvelles fonctionnalités -->
         <OnboardingTutorial 
