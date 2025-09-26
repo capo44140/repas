@@ -193,23 +193,18 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, inject } from 'vue';
 import { Icon } from '@iconify/vue';
+
+// Utiliser le store des repas
+const mealsStore = inject('mealsStore');
 
 const showAdvanced = ref(false);
 const newIncludedIngredient = ref('');
 const newExcludedIngredient = ref('');
 
-const searchQuery = reactive({
-  text: '',
-  saison: '',
-  type: '',
-  maxPrepTime: null,
-  difficulte: '',
-  maxCalories: null,
-  includedIngredients: [],
-  excludedIngredients: []
-});
+// Utiliser les filtres du store
+const searchQuery = reactive(mealsStore.searchFilters);
 
 const emit = defineEmits(['search']);
 
@@ -241,20 +236,15 @@ const removeExcludedIngredient = (index) => {
 
 // Réinitialiser la recherche
 const resetSearch = () => {
-  Object.assign(searchQuery, {
-    text: '',
-    saison: '',
-    type: '',
-    maxPrepTime: null,
-    difficulte: '',
-    maxCalories: null,
-    includedIngredients: [],
-    excludedIngredients: []
-  });
+  mealsStore.clearSearchFilters();
+  // Mettre à jour la référence locale
+  Object.assign(searchQuery, mealsStore.searchFilters);
 };
 
 // Lancer la recherche
 const search = () => {
+  // Mettre à jour les filtres dans le store
+  mealsStore.setSearchFilters(searchQuery);
   emit('search', { ...searchQuery });
 };
 </script>

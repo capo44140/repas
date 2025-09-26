@@ -5,10 +5,14 @@
       <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Repas en vedette</h2>
       <div class="flex flex-col md:flex-row gap-6">
         <div class="md:w-1/2">
-          <img 
+          <LazyImage 
             :src="featuredMeal.image" 
-            :alt="featuredMeal.name" 
-            class="w-full h-64 object-cover rounded-lg"
+            :alt="featuredMeal.name"
+            width="100%"
+            height="256px"
+            image-class="w-full h-64 object-cover rounded-lg"
+            :placeholder="'/placeholder-recipe.jpg'"
+            :error-text="'Image non disponible'"
           />
         </div>
         <div class="md:w-1/2">
@@ -141,32 +145,54 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import MonthlyMealsChart from '../components/MonthlyMealsChart.vue';
 import StatisticsChart from '../components/StatisticsChart.vue';
 import RecipeDetailModal from '../components/RecipeDetailModal.vue';
+import LazyImage from '../components/LazyImage.vue';
 import { useRouter } from 'vue-router';
-import { neonService } from '../services/neon';
+import { useMealsStore } from '../stores/useMealsStore';
+import { useUIStore } from '../stores/useUIStore';
 
-// Données simulées pour le tableau de bord
-const totalMeals = ref(382);
-const mealsGrowth = ref(11.01);
-const generatedMenus = ref(215);
-const menusGrowth = ref(9.05);
+// Utiliser les stores
+const mealsStore = useMealsStore();
+const uiStore = useUIStore();
+const router = useRouter();
 
 // Variables pour le modal de recette
 const isRecipeModalOpen = ref(false);
-const router = useRouter();
+
+// Données calculées depuis les stores
+const totalMeals = computed(() => mealsStore.totalMeals);
+const mealsGrowth = ref(11.01); // TODO: Calculer depuis les données historiques
+const generatedMenus = computed(() => mealsStore.generatedMenus?.length || 0);
+const menusGrowth = ref(9.05); // TODO: Calculer depuis les données historiques
 
 // Repas en vedette
-const featuredMeal = ref({
-  name: '',
-  season: '',
-  type: '',
-  description: '',
-  prepTime: 0,
-  image: ''
+const featuredMeal = computed(() => {
+  const randomMeal = mealsStore.randomMeal;
+  if (!randomMeal) {
+    return {
+      name: '',
+      season: '',
+      type: '',
+      description: '',
+      prepTime: 0,
+      image: ''
+    };
+  }
+  
+  return {
+    name: randomMeal.nom,
+    season: randomMeal.saison,
+    type: randomMeal.type,
+    description: randomMeal.notes || 'Description non disponible',
+    prepTime: randomMeal.temps_preparation || 0,
+    image: randomMeal.image_url || '',
+    ingredients: randomMeal.ingredients || [],
+    instructions: randomMeal.instructions || []
+  };
 });
 
 // Function to open the recipe detail modal
@@ -187,33 +213,9 @@ const showRecipeDetails = (meal) => {
   }
 };
 
-// Charger un repas aléatoire depuis la base de données
-const loadRandomMeal = async () => {
-  try {
-    const repas = await neonService.getAllRepas();
-    if (repas && repas.length > 0) {
-      const randomIndex = Math.floor(Math.random() * repas.length);
-      const randomMeal = repas[randomIndex];
-      
-      // Adapter les données pour l'affichage
-      featuredMeal.value = {
-        name: randomMeal.nom,
-        season: randomMeal.saison,
-        type: randomMeal.type,
-        description: randomMeal.notes || 'Description non disponible',
-        prepTime: randomMeal.temps_preparation || 0,
-        image: randomMeal.image_url || '',
-        ingredients: randomMeal.ingredients || [],
-        instructions: randomMeal.instructions || []
-      };
-    }
-  } catch (error) {
-    console.error('Erreur lors du chargement du repas aléatoire:', error);
-  }
-};
-
 onMounted(() => {
-  loadRandomMeal();
+  // Les données sont déjà chargées par le store lors de l'initialisation
+  // Le repas aléatoire sera automatiquement mis à jour via le computed
 });
 </script>
 

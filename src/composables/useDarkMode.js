@@ -8,31 +8,31 @@ const saturation = ref(60);
 
 // Thèmes prédéfinis
 const themes = [
-  { id: "blue", name: "Bleu", primary: "#3B82F6", secondary: "#10B981" },
-  { id: "purple", name: "Violet", primary: "#8B5CF6", secondary: "#EC4899" },
-  { id: "green", name: "Vert", primary: "#10B981", secondary: "#6366F1" },
-  { id: "red", name: "Rouge", primary: "#EF4444", secondary: "#F59E0B" },
-  { id: "amber", name: "Ambre", primary: "#F59E0B", secondary: "#3B82F6" },
+  { id: "blue", name: "Bleu", primary: "#0ea5e9", secondary: "#22c55e" },
+  { id: "purple", name: "Violet", primary: "#a855f7", secondary: "#ec4899" },
+  { id: "green", name: "Vert", primary: "#22c55e", secondary: "#6366f1" },
+  { id: "red", name: "Rouge", primary: "#ef4444", secondary: "#f59e0b" },
+  { id: "amber", name: "Ambre", primary: "#f59e0b", secondary: "#0ea5e9" },
   {
     id: "custom",
     name: "Personnalisé",
-    primary: "#3B82F6",
-    secondary: "#10B981",
+    primary: "#0ea5e9",
+    secondary: "#22c55e",
   },
 ];
 
 // Couleurs principales disponibles
 const primaryColors = [
-  { id: "blue", value: "#3B82F6" },
-  { id: "purple", value: "#8B5CF6" },
-  { id: "green", value: "#10B981" },
-  { id: "red", value: "#EF4444" },
-  { id: "amber", value: "#F59E0B" },
-  { id: "pink", value: "#EC4899" },
-  { id: "indigo", value: "#6366F1" },
-  { id: "teal", value: "#14B8A6" },
-  { id: "cyan", value: "#06B6D4" },
-  { id: "orange", value: "#F97316" },
+  { id: "blue", value: "#0ea5e9" },
+  { id: "purple", value: "#a855f7" },
+  { id: "green", value: "#22c55e" },
+  { id: "red", value: "#ef4444" },
+  { id: "amber", value: "#f59e0b" },
+  { id: "pink", value: "#ec4899" },
+  { id: "indigo", value: "#6366f1" },
+  { id: "teal", value: "#14b8a6" },
+  { id: "cyan", value: "#06b6d4" },
+  { id: "orange", value: "#f97316" },
 ];
 
 // Fonction pour ajuster la couleur (clair/foncé)

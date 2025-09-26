@@ -1,58 +1,52 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import GeneratedMealsView from '../views/GeneratedMealsView.vue'
-import GeneratedMeals from '../views/GeneratedMeals.vue'
-import AdminView from '../views/AdminView.vue'
-import LoginForm from '../components/LoginForm.vue'
-import ShareRecipesView from '../views/ShareRecipesView.vue'
-import ShoppingListView from '../views/ShoppingListView.vue'
 
+// Lazy loading des composants avec des noms de chunks optimisés
 const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    component: () => import(/* webpackChunkName: "home" */ '../views/HomeView.vue')
   },
   {
     path: '/generated-meals',
     name: 'generated-meals',
-    component: GeneratedMealsView
+    component: () => import(/* webpackChunkName: "meals" */ '../views/GeneratedMealsView.vue')
   },
   {
     path: '/statistics',
     name: 'statistics',
-    component: HomeView
+    component: () => import(/* webpackChunkName: "statistics" */ '../views/StatisticsView.vue')
   },
   {
     path: '/login',
     name: 'login',
-    component: LoginForm
+    component: () => import(/* webpackChunkName: "auth" */ '../components/LoginForm.vue')
   },
   {
     path: '/admin',
     name: 'admin',
-    component: AdminView,
+    component: () => import(/* webpackChunkName: "admin" */ '../views/AdminView.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/preferences',
     name: 'preferences',
-    component: () => import('../views/UserPreferencesView.vue')
+    component: () => import(/* webpackChunkName: "preferences" */ '../views/UserPreferencesView.vue')
   },
   {
     path: '/generator',
     name: 'generator',
-    component: GeneratedMeals
+    component: () => import(/* webpackChunkName: "generator" */ '../views/GeneratedMeals.vue')
   },
   {
     path: '/share-recipes',
     name: 'share-recipes',
-    component: ShareRecipesView
+    component: () => import(/* webpackChunkName: "share" */ '../views/ShareRecipesView.vue')
   },
   {
     path: '/shopping-list',
     name: 'shopping-list',
-    component: ShoppingListView,
+    component: () => import(/* webpackChunkName: "shopping" */ '../views/ShoppingListView.vue'),
     meta: {
       title: 'Liste de courses',
       requiresAuth: true

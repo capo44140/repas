@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import './style.css';
@@ -7,14 +8,24 @@ import ToastNotification from './components/ToastNotification.vue'
 import { useDarkMode } from './composables/useDarkMode'
 
 const app = createApp(App)
+const pinia = createPinia()
 
 // Enregistrement des composants globaux
 app.component('Icon', Icon)
 app.component('ToastNotification', ToastNotification)
 
+// Enregistrement des composants lazy loading de manière synchrone
+import LazyImage from './components/LazyImage.vue'
+import LazyComponent from './components/LazyComponent.vue'
+import RouterViewWrapper from './components/RouterViewWrapper.vue'
+app.component('LazyImage', LazyImage)
+app.component('LazyComponent', LazyComponent)
+app.component('RouterViewWrapper', RouterViewWrapper)
+
 // Fournir le composable useDarkMode globalement
 app.provide('useDarkMode', useDarkMode)
 
+app.use(pinia)
 app.use(router)
 app.mount('#app')
 

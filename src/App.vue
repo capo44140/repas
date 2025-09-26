@@ -245,11 +245,7 @@
 
         <!-- Main Content -->
         <main class="flex-1 overflow-auto p-6">
-          <router-view v-slot="{ Component }">
-            <transition name="fade" mode="out-in">
-              <component :is="Component" />
-            </transition>
-          </router-view>
+          <RouterViewWrapper />
         </main>
         
         <!-- Composant de notification toast -->
@@ -286,14 +282,24 @@ import NetworkStatus from './components/NetworkStatus.vue';
 import OnboardingTutorial from './components/OnboardingTutorial.vue';
 import NotificationService from './services/NotificationService';
 import { useDarkMode } from './composables/useDarkMode';
+import { useUIStore } from './stores/useUIStore';
+import { useMealsStore } from './stores/useMealsStore';
+import { usePreferencesStore } from './stores/usePreferencesStore';
+import { useMenuStore } from './stores/useMenuStore';
 
-const isSidebarOpen = ref(localStorage.getItem('sidebarOpen') !== 'false');
-const windowWidth = ref(0);
-const isMobile = ref(false);
-const route = useRoute();
+// Utiliser les stores Pinia
+const uiStore = useUIStore();
+const mealsStore = useMealsStore();
+const preferencesStore = usePreferencesStore();
+const menuStore = useMenuStore();
 
-// Utiliser le composable pour la gestion des thèmes
+// Utiliser le composable pour la gestion des thèmes (compatibilité)
 const { isDarkMode, toggleDarkMode } = useDarkMode();
+
+// Variables réactives pour la compatibilité
+const isSidebarOpen = computed(() => uiStore.sidebarOpen);
+const isMobile = computed(() => uiStore.isMobile);
+const route = useRoute();
 
 // Menu items
 const menuItems = [
@@ -305,98 +311,42 @@ const menuItems = [
   { to: '/shopping-list', icon: 'ph:shopping-cart', text: 'Liste de courses' }
 ];
 
-provide('isSidebarOpen', isSidebarOpen);
+// Fournir les stores aux composants enfants
+provide('uiStore', uiStore);
+provide('mealsStore', mealsStore);
+provide('preferencesStore', preferencesStore);
+provide('menuStore', menuStore);
 
-// Fonction pour vérifier si on est en mode desktop
-const isDesktop = () => windowWidth.value >= 768;
-
-const updateMobileState = () => {
-  windowWidth.value = window.innerWidth;
-  isMobile.value = !isDesktop();
-};
-
-// Chargement initial de l'état de la sidebar depuis localStorage
-// S'il n'y a pas de valeur enregistrée, la sidebar est ouverte par défaut sur desktop et fermée sur mobile
-const initSidebarState = () => {
-  const savedState = localStorage.getItem('sidebarOpen');
-  if (savedState === null) {
-    // Valeur par défaut basée sur la taille de l'écran
-    isSidebarOpen.value = window.innerWidth >= 768;
-  } else {
-    isSidebarOpen.value = savedState === 'true';
-  }
-};
-
+// Fonctions de compatibilité
 const toggleSidebar = () => {
-  isSidebarOpen.value = !isSidebarOpen.value;
-  localStorage.setItem('sidebarOpen', isSidebarOpen.value.toString());
-  
-  // Si on est sur mobile et que la sidebar est ouverte, ajouter une classe pour
-  // empêcher le défilement du contenu en arrière-plan
-  if (isMobile.value && isSidebarOpen.value) {
-    document.body.classList.add('overflow-hidden');
-  } else {
-    document.body.classList.remove('overflow-hidden');
-  }
+  uiStore.toggleSidebar();
 };
-
-// Fournir la fonction toggleSidebar aux composants enfants
-provide('toggleSidebar', toggleSidebar);
 
 const closeSidebarOnMobile = () => {
-  if (!isDesktop()) {
-    isSidebarOpen.value = false;
+  if (!uiStore.isDesktop) {
+    uiStore.sidebarOpen = false;
   }
 };
 
 onMounted(() => {
-  // Initialiser la largeur de la fenêtre
-  updateMobileState();
-  
-  // Initialisation de l'état de la sidebar
-  initSidebarState();
-  
-  // Gestion du redimensionnement
-  window.addEventListener('resize', () => {
-    updateMobileState();
-    
-    // Sur mobile, fermer automatiquement la sidebar si elle est ouverte
-    if (isMobile.value && isSidebarOpen.value) {
-      isSidebarOpen.value = false;
-      localStorage.setItem('sidebarOpen', 'false');
-    }
-  });
+  // Initialiser tous les stores
+  uiStore.initializeUI();
+  mealsStore.initializeStore();
+  preferencesStore.initializePreferences();
+  menuStore.initializeMenuStore();
 });
 
-// État du toast global
-const toast = ref({
-  show: false,
-  message: '',
-  title: '',
-  type: 'info',
-  duration: 3000,
-  position: 'bottom-right',
-  dismissible: true,
-  shake: false
-});
+// Utiliser le toast du store UI
+const toast = computed(() => uiStore.toast);
 
 // Méthode pour afficher un toast global
-const showToast = ({ message, title = '', type = 'info', duration = 3000, position = 'bottom-right', dismissible = true, shake = false }) => {
-  toast.value = {
-    show: true,
-    message,
-    title,
-    type,
-    duration,
-    position,
-    dismissible,
-    shake
-  };
+const showToast = (options) => {
+  uiStore.showToast(options);
 };
 
 // Gestionnaire de la fermeture du toast
 const onToastDismissed = () => {
-  // Vous pouvez ajouter une logique supplémentaire ici si nécessaire
+  uiStore.hideToast();
 };
 
 // Fournir l'état et les fonctions à tous les composants enfants
@@ -405,29 +355,15 @@ provide('isSidebarOpen', isSidebarOpen);
 provide('toggleSidebar', toggleSidebar);
 provide('showToast', showToast);
 
-const showTutorial = ref(false);
-const lastVisitDate = ref(null);
-
-const checkForNewFeatures = () => {
-  const lastVersionSeen = localStorage.getItem('lastVersionSeen');
-  const currentVersion = '2.0.0'; // Mettre à jour à chaque nouvelle version avec fonctionnalités
-  
-  if (lastVersionSeen !== currentVersion) {
-    // Nouvelle version, afficher le tutoriel
-    showTutorial.value = true;
-    
-    // Enregistrer la version actuelle
-    localStorage.setItem('lastVersionSeen', currentVersion);
-  }
-};
+// Utiliser le tutoriel du store UI
+const showTutorial = computed(() => uiStore.showTutorial);
 
 const onTutorialCompleted = () => {
-  showTutorial.value = false;
-  showToast('Tutoriel terminé. Profitez des nouvelles fonctionnalités !', 'success');
+  uiStore.completeTutorial();
 };
 
 const onTutorialSkipped = () => {
-  showTutorial.value = false;
+  uiStore.skipTutorial();
 };
 
 const requestNotificationPermission = async () => {
@@ -479,9 +415,6 @@ const handlePreferencesUpdated = (event) => {
 };
 
 onMounted(() => {
-  // Vérifier si c'est la première visite depuis la mise à jour
-  checkForNewFeatures();
-  
   // Demander la permission pour les notifications
   requestNotificationPermission();
   
@@ -494,6 +427,9 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  // Nettoyer les stores
+  uiStore.cleanup();
+  
   // Supprimer les écouteurs d'événements
   window.removeEventListener('online', syncDataWhenOnline);
   window.removeEventListener('offline', handleOfflineMode);
@@ -503,16 +439,16 @@ onBeforeUnmount(() => {
 
 <style>
 :root {
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --primary-200: #bfdbfe;
-  --primary-300: #93c5fd;
-  --primary-400: #60a5fa;
-  --primary-500: #3b82f6;
-  --primary-600: #2563eb;
-  --primary-700: #1d4ed8;
-  --primary-800: #1e40af;
-  --primary-900: #1e3a8a;
+  --primary-50: #f0f9ff;
+  --primary-100: #e0f2fe;
+  --primary-200: #bae6fd;
+  --primary-300: #7dd3fc;
+  --primary-400: #38bdf8;
+  --primary-500: #0ea5e9;
+  --primary-600: #0284c7;
+  --primary-700: #0369a1;
+  --primary-800: #075985;
+  --primary-900: #0c4a6e;
 }
 
 .fade-enter-active,
