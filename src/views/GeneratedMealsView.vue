@@ -2,124 +2,30 @@
   <div class="space-y-6">
     <!-- En-tête avec titre -->
     <div class="flex justify-between items-center">
-      <h1 class="text-2xl font-bold">Recherche de repas</h1>
-    </div>
-
-    <!-- Filtres -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Type de repas</label>
-        <select 
-          v-model="filters.type" 
-          class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          :class="{
-            'bg-white': !isDarkMode,
-            'bg-gray-700 border-gray-600': isDarkMode
-          }"
-        >
-          <option value="">Tous</option>
-          <option v-for="type in types" :key="type" :value="type">{{ type }}</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Saison</label>
-        <select 
-          v-model="filters.saison" 
-          class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          :class="{
-            'bg-white': !isDarkMode,
-            'bg-gray-700 border-gray-600': isDarkMode
-          }"
-        >
-          <option value="">Toutes</option>
-          <option v-for="saison in saisons" :key="saison" :value="saison">{{ saison }}</option>
-        </select>
-      </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Difficulté</label>
-        <select 
-          v-model="filters.difficulte" 
-          class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-          :class="{
-            'bg-white': !isDarkMode,
-            'bg-gray-700 border-gray-600': isDarkMode
-          }"
-        >
-          <option value="">Toutes</option>
-          <option v-for="difficulte in difficultes" :key="difficulte" :value="difficulte">{{ difficulte }}</option>
-        </select>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Recherche de repas</h1>
+      <div class="flex items-center gap-4">
+        <span class="text-sm text-gray-600 dark:text-gray-400">
+          {{ filteredRepas.length }} recette{{ filteredRepas.length > 1 ? 's' : '' }}
+        </span>
       </div>
     </div>
 
-    <!-- Liste des repas -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div 
-        v-for="repas in filteredRepas" 
-        :key="repas.id"
-        class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
-        :class="{
-          'bg-gray-800': isDarkMode
-        }"
-      >
-        <img 
-          :src="repas.image_url || '/placeholder.jpg'" 
-          :alt="repas.nom"
-          class="w-full h-48 object-cover"
-        />
-        <div class="p-4">
-          <h3 class="text-lg font-semibold mb-2">{{ repas.nom }}</h3>
-          <div class="flex flex-wrap gap-2 mb-4">
-            <span 
-              class="px-2 py-1 rounded-full text-xs font-medium"
-              :class="{
-                'bg-primary-100 text-primary-800': !isDarkMode,
-                'bg-primary-900 text-primary-200': isDarkMode
-              }"
-            >
-              {{ repas.type }}
-            </span>
-            <span 
-              class="px-2 py-1 rounded-full text-xs font-medium"
-              :class="{
-                'bg-green-100 text-green-800': !isDarkMode,
-                'bg-green-900 text-green-200': isDarkMode
-              }"
-            >
-              {{ repas.saison }}
-            </span>
-            <span 
-              class="px-2 py-1 rounded-full text-xs font-medium"
-              :class="{
-                'bg-yellow-100 text-yellow-800': !isDarkMode,
-                'bg-yellow-900 text-yellow-200': isDarkMode
-              }"
-            >
-              {{ repas.difficulte }}
-            </span>
-          </div>
-          <div class="space-y-2 text-sm">
-            <p class="flex justify-between">
-              <span>Temps total:</span>
-              <span>{{ repas.temps_total }} min</span>
-            </p>
-            <p class="flex justify-between">
-              <span>Calories:</span>
-              <span>{{ repas.calories }} kcal</span>
-            </p>
-            <p class="flex justify-between">
-              <span>Coût:</span>
-              <span>{{ repas.cout }}</span>
-            </p>
-          </div>
-          <button 
-            @click="showDetails(repas)"
-            class="mt-4 w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors duration-200"
-          >
-            Voir les détails
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Liste virtuelle des repas -->
+    <VirtualRecipeList
+      :recipes="filteredRepas"
+      :container-height="600"
+      :item-height="200"
+      :grid-item-height="280"
+      :loading="loading"
+      :has-more="hasMore"
+      @recipe-click="showDetails"
+      @recipe-favorite="toggleFavorite"
+      @recipe-share="shareRecipe"
+      @search="handleSearch"
+      @filter-change="handleFilterChange"
+      @load-more="loadMoreRecipes"
+      @add-recipe="addNewRecipe"
+    />
 
     <!-- Modal de détails -->
     <div v-if="selectedRepas" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
@@ -200,49 +106,109 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, inject } from 'vue';
 import { Icon } from '@iconify/vue';
-import { dataSourceService } from '../services/dataSource';
-import { useDarkMode } from '../composables/useDarkMode';
+import VirtualRecipeList from '../components/VirtualRecipeList.vue';
+import { useMealsStore } from '../stores/useMealsStore';
+import { useUIStore } from '../stores/useUIStore';
 
-const { isDarkMode } = useDarkMode();
+// Utiliser les stores
+const mealsStore = useMealsStore();
+const uiStore = useUIStore();
 
-const repasList = ref([]);
+// État local
 const selectedRepas = ref(null);
-
-// Filtres
-const filters = ref({
-  type: '',
-  saison: '',
-  difficulte: ''
+const loading = ref(false);
+const hasMore = ref(false);
+const searchFilters = ref({
+  query: '',
+  season: '',
+  type: ''
 });
 
-// Charger les repas
+// Données calculées
+const filteredRepas = computed(() => {
+  let filtered = [...mealsStore.filteredMeals];
+
+  // Appliquer les filtres de recherche
+  if (searchFilters.value.query) {
+    const query = searchFilters.value.query.toLowerCase();
+    filtered = filtered.filter(recipe => 
+      recipe.nom.toLowerCase().includes(query) ||
+      recipe.ingredients?.some(ingredient => 
+        ingredient.toLowerCase().includes(query)
+      ) ||
+      recipe.notes?.toLowerCase().includes(query)
+    );
+  }
+
+  if (searchFilters.value.season) {
+    filtered = filtered.filter(recipe => recipe.saison === searchFilters.value.season);
+  }
+
+  if (searchFilters.value.type) {
+    filtered = filtered.filter(recipe => recipe.type === searchFilters.value.type);
+  }
+
+  return filtered;
+});
+
+// Méthodes
 const loadRepas = async () => {
+  loading.value = true;
   try {
-    repasList.value = await dataSourceService.loadRepas();
+    await mealsStore.fetchMeals();
+    hasMore.value = false; // Pour l'instant, on charge tout d'un coup
   } catch (error) {
     console.error('Erreur lors du chargement des repas:', error);
+    uiStore.showToast({
+      message: 'Erreur lors du chargement des recettes',
+      type: 'error'
+    });
+  } finally {
+    loading.value = false;
   }
 };
 
-// Liste des options pour les filtres
-const types = computed(() => [...new Set(repasList.value.map(r => r.type))]);
-const saisons = computed(() => [...new Set(repasList.value.map(r => r.saison))]);
-const difficultes = computed(() => [...new Set(repasList.value.map(r => r.difficulte))]);
-
-// Filtrer les repas
-const filteredRepas = computed(() => {
-  return repasList.value.filter(repas => {
-    return (!filters.value.type || repas.type === filters.value.type) &&
-           (!filters.value.saison || repas.saison === filters.value.saison) &&
-           (!filters.value.difficulte || repas.difficulte === filters.value.difficulte);
-  });
-});
-
-// Afficher les détails d'un repas
 const showDetails = (repas) => {
   selectedRepas.value = repas;
+};
+
+const toggleFavorite = (recipe) => {
+  // TODO: Implémenter la logique de favoris
+  uiStore.showToast({
+    message: recipe.isFavorite ? 'Recette retirée des favoris' : 'Recette ajoutée aux favoris',
+    type: 'success'
+  });
+};
+
+const shareRecipe = (recipe) => {
+  // TODO: Implémenter le partage
+  uiStore.showToast({
+    message: 'Fonctionnalité de partage à venir',
+    type: 'info'
+  });
+};
+
+const handleSearch = (searchData) => {
+  searchFilters.value = { ...searchFilters.value, ...searchData };
+};
+
+const handleFilterChange = (filterData) => {
+  searchFilters.value = { ...searchFilters.value, ...filterData };
+};
+
+const loadMoreRecipes = () => {
+  // TODO: Implémenter la pagination
+  hasMore.value = false;
+};
+
+const addNewRecipe = () => {
+  // TODO: Rediriger vers le formulaire d'ajout
+  uiStore.showToast({
+    message: 'Redirection vers le formulaire d\'ajout',
+    type: 'info'
+  });
 };
 
 // Charger les repas au montage du composant

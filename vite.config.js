@@ -60,6 +60,8 @@ export default defineConfig({
             './src/components/LazyImage.vue',
             './src/components/LazyComponent.vue',
             './src/components/VirtualList.vue',
+            './src/components/VirtualRecipeList.vue',
+            './src/components/RecipeCard.vue',
             './src/components/ToastNotification.vue',
             './src/components/ThemeSwitcher.vue'
           ],

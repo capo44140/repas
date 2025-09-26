@@ -18,9 +18,13 @@ app.component('ToastNotification', ToastNotification)
 import LazyImage from './components/LazyImage.vue'
 import LazyComponent from './components/LazyComponent.vue'
 import RouterViewWrapper from './components/RouterViewWrapper.vue'
+import VirtualRecipeList from './components/VirtualRecipeList.vue'
+import RecipeCard from './components/RecipeCard.vue'
 app.component('LazyImage', LazyImage)
 app.component('LazyComponent', LazyComponent)
 app.component('RouterViewWrapper', RouterViewWrapper)
+app.component('VirtualRecipeList', VirtualRecipeList)
+app.component('RecipeCard', RecipeCard)
 
 // Fournir le composable useDarkMode globalement
 app.provide('useDarkMode', useDarkMode)
