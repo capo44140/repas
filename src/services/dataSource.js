@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import { neonService } from './neon';
-import Papa from 'papaparse';
+import * as Papa from 'papaparse';
 
 const dataSource = ref('csv'); // 'csv' ou 'neon'
 
