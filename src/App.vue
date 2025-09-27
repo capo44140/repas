@@ -238,7 +238,7 @@
                 'bg-primary-900 text-primary-200': isDarkMode
               }"
             >
-              v1.0.0
+              v1.0.1
             </span>
           </div>
         </header>
