@@ -1,3 +1,4 @@
+<template>
   <div>
     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
       Saison
@@ -24,4 +25,21 @@
     <label class="text-sm text-gray-700 dark:text-gray-300">
       Réserver pour le dimanche midi uniquement
     </label>
-  </div> 
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'EditMealModal',
+  props: {
+    meal: {
+      type: Object,
+      required: true
+    },
+    seasons: {
+      type: Object,
+      required: true
+    }
+  }
+}
+</script> 
